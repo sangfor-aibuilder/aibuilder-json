@@ -1,0 +1,5 @@
+interface:
+  display_name: "FastGPT JSON Config"
+  short_description: "Generate and validate import-ready FastGPT workflow JSON"
+  default_prompt: "Analyze user requirements, confirm key assumptions, generate FastGPT workflow JSON, then run strict node/edge/reference validation before final output."
+
