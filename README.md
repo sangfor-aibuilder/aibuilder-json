@@ -24,16 +24,29 @@ AIBuilder JSON Config is a professional tool that transforms natural-language bu
 
 ### 🚀 Quick Start
 
+#### Platform Compatibility
+
+This tool works with **any AI agent platform that supports skills**, including:
+
+- **Claude Code** (Anthropic's official CLI)
+- **OpenClaw** (Open-source Claude alternative)
+- **Costrict.ai** (AI workflow platform)
+- **Trae** (AI development environment)
+- Any other platform with skill/plugin support
+
 #### Installation
 
-This is a Claude Code skill. To use it:
+**For Claude Code** (example):
 
-1. Copy the `aibuilder-json-config` folder to your Claude Code skills directory:
+1. Copy the `aibuilder-json-config` folder to your skills directory:
+   
    ```bash
    cp -r aibuilder-json-config ~/.claude/skills/
    ```
 
 2. Restart Claude Code or reload skills
+
+**For other platforms**: Follow your platform's skill installation guide and place the `aibuilder-json-config` folder in the appropriate skills directory.
 
 #### Basic Usage
 
@@ -49,6 +62,7 @@ Create a FastGPT workflow for HR resume screening:
 ```
 
 The tool will:
+
 1. Analyze your requirements
 2. Confirm assumptions and critical options
 3. Generate complete FastGPT JSON with all nodes, edges, and configurations
@@ -58,9 +72,11 @@ The tool will:
 ### 📚 What's Included
 
 #### Core Skill
+
 - `SKILL.md`: Main skill definition and workflow rules
 
 #### Comprehensive References
+
 - `generation-hard-rules.md`: Mandatory generation rules
 - `required-input-rules.md`: User input collection rules
 - `ifelse-rules.md`: Conditional branching rules
@@ -94,7 +110,9 @@ The tool will:
 ### 🔧 Advanced Features
 
 #### Requirement Enrichment
+
 The tool automatically adds:
+
 - Error handling paths
 - Default configurations
 - User guidance text
@@ -102,7 +120,9 @@ The tool automatically adds:
 - Fallback messages
 
 #### Strict Validation
+
 Every generated workflow is validated for:
+
 - Node input/output completeness
 - Edge connectivity
 - Reference validity
@@ -110,7 +130,9 @@ Every generated workflow is validated for:
 - Layout spacing requirements
 
 #### Production-Ready Output
+
 Generated workflows include:
+
 - Markdown-formatted welcome text
 - Chinese user-facing labels
 - Structured intermediate outputs
@@ -120,6 +142,7 @@ Generated workflows include:
 ### 📖 Documentation
 
 For detailed documentation, see the `references/` folder:
+
 - Start with `generation-hard-rules.md` for core principles
 - Check `node-selection-rules.md` for choosing the right nodes
 - Review `validation-checklist.md` before importing
@@ -137,6 +160,7 @@ For detailed documentation, see the `references/` folder:
 This tool is part of the **Sangfor AIBuilder** ecosystem, an enterprise-grade RAG platform based on FastGPT.
 
 **Sangfor AIBuilder** offers:
+
 - 🔒 Enterprise security & compliance
 - 🏢 Private deployment options
 - 🛡️ Advanced security features
@@ -155,13 +179,26 @@ Apache 2.0 License. See [LICENSE](LICENSE) for details.
 - [FastGPT](https://github.com/labring/FastGPT)
 - [AIBuilder Enterprise Toolkit](https://github.com/sangfor-aibuilder/aibuilder-enterprise-toolkit)
 
+### 👥 Join Our Community
+
+Join the **AIBuilder Developer Community** for:
+- Technical discussions and support
+- Latest updates and releases
+- Best practices and use cases
+- Direct communication with the team
+
+<div align="center">
+  <img src="aibuilderqcoder.JPG" alt="AIBuilder Developer Community QR Code" width="300">
+  <p><em>Scan to join our developer community</em></p>
+</div>
+
 ---
 
 ## 中文
 
 ### 🎯 什么是 AIBuilder JSON Config？
 
-AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求转换为生产就绪的 FastGPT 工作流 JSON 配置。由**深信服**开发，确保您的 AI 工作流结构正确、经过验证且可直接导入。
+AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求转换为生产就绪的 FastGPT 工作流 JSON 配置。由**SANGFOR AIBuilder Team**开发，确保您的 AI 工作流结构正确、经过验证且可直接导入。
 
 ### ✨ 核心功能
 
@@ -173,16 +210,29 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 
 ### 🚀 快速开始
 
+#### 平台兼容性
+
+本工具适用于**任何支持 skills 的 AI Agent 平台**，包括：
+
+- **Claude Code**（Anthropic 官方 CLI）
+- **OpenClaw**（开源 Claude 替代方案）
+- **Costrict.ai**（AI 工作流平台）
+- **Trae**（AI 开发环境）
+- 任何其他支持 skill/plugin 的平台
+
 #### 安装
 
-这是一个 Claude Code skill。使用方法：
+**以 Claude Code 为例**：
 
-1. 将 `aibuilder-json-config` 文件夹复制到 Claude Code skills 目录：
+1. 将 `aibuilder-json-config` 文件夹复制到 skills 目录：
+   
    ```bash
    cp -r aibuilder-json-config ~/.claude/skills/
    ```
 
 2. 重启 Claude Code 或重新加载 skills
+
+**其他平台**：按照您平台的 skill 安装指南，将 `aibuilder-json-config` 文件夹放置到相应的 skills 目录。
 
 #### 基础使用
 
@@ -198,6 +248,7 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 ```
 
 工具会：
+
 1. 分析您的需求
 2. 确认假设和关键选项
 3. 生成包含所有节点、边和配置的完整 FastGPT JSON
@@ -207,9 +258,11 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 ### 📚 包含内容
 
 #### 核心 Skill
+
 - `SKILL.md`：主 skill 定义和工作流规则
 
 #### 完整参考文档
+
 - `generation-hard-rules.md`：强制生成规则
 - `required-input-rules.md`：用户输入收集规则
 - `ifelse-rules.md`：条件分支规则
@@ -243,7 +296,9 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 ### 🔧 高级功能
 
 #### 需求增强
+
 工具自动添加：
+
 - 错误处理路径
 - 默认配置
 - 用户指导文本
@@ -251,7 +306,9 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 - 回退消息
 
 #### 严格验证
+
 每个生成的工作流都会验证：
+
 - 节点输入/输出完整性
 - 边连接性
 - 引用有效性
@@ -259,7 +316,9 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 - 布局间距要求
 
 #### 生产就绪输出
+
 生成的工作流包含：
+
 - Markdown 格式的欢迎文本
 - 中文用户界面标签
 - 结构化中间输出
@@ -269,6 +328,7 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 ### 📖 文档
 
 详细文档请查看 `references/` 文件夹：
+
 - 从 `generation-hard-rules.md` 开始了解核心原则
 - 查看 `node-selection-rules.md` 选择正确的节点
 - 导入前查看 `validation-checklist.md`
@@ -286,13 +346,14 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 本工具是 **深信服 AIBuilder** 生态系统的一部分，这是一个基于 FastGPT 的企业级 RAG 平台。
 
 **深信服 AIBuilder** 提供：
+
 - 🔒 企业安全与合规
 - 🏢 私有化部署选项
 - 🛡️ 高级安全功能
 - 📞 企业级支持与 SLA
 - 🚀 生产就绪能力
 
-[了解更多关于深信服 AIBuilder →](https://www.sangfor.com/aibuilder)
+
 
 ### 📄 许可证
 
@@ -303,6 +364,19 @@ Apache 2.0 许可证。详见 [LICENSE](LICENSE)。
 - [深信服 AIBuilder](https://www.sangfor.com/aibuilder)
 - [FastGPT](https://github.com/labring/FastGPT)
 - [AIBuilder 企业工具包](https://github.com/sangfor-aibuilder/aibuilder-enterprise-toolkit)
+
+### 👥 加入开发者社群
+
+加入 **AIBuilder 开发者社群**，获取：
+- 技术讨论和支持
+- 最新更新和发布
+- 最佳实践和使用案例
+- 与团队直接沟通
+
+<div align="center">
+  <img src="aibuilderqcoder.JPG" alt="AIBuilder 开发者社群二维码" width="300">
+  <p><em>扫码加入开发者社群</em></p>
+</div>
 
 ---
 
