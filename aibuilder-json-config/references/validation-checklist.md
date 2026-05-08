@@ -76,6 +76,7 @@
 ## E2. Dataset Retrieval
 
 - `datasetSearchNode.datasetSelectList` is not empty when knowledge-base retrieval is required.
+- Unknown `datasetId` placeholders use 24-character numeric ObjectId-compatible strings such as `000000000000000000000001`, not Chinese text or descriptive names.
 - `datasetSearchNode.userChatInput` is configured with the real retrieval query source.
 - `datasetConcatNode` only merges dataset quote references.
 - Downstream `chatNode.quoteQA` references retrieval outputs rather than fake placeholders.

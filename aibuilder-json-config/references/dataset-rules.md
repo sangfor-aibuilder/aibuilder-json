@@ -78,7 +78,8 @@ When generating importable JSON:
 
 - Do not invent fake dataset business semantics.
 - If the user names concrete knowledge bases, preserve those names and IDs when provided.
-- If dataset IDs are unknown, clearly mark them as placeholders that the user must replace.
+- If dataset IDs are unknown, use numeric placeholder IDs in MongoDB ObjectId-compatible 24-character format, such as `000000000000000000000001`, and clearly mark them as placeholders that the user must replace.
+- Dataset ID placeholders must not contain Chinese text, knowledge-base names, or descriptive words.
 - Keep retrieval node names, labels, and descriptions in Chinese.
 
 ## 6. Retrieval Query Source

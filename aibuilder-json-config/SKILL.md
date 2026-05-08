@@ -72,6 +72,7 @@ Always prefer bundled references in this skill folder (export-safe).
    - Configure knowledge-base retrieval nodes completely when retrieval is required:
      - default to explicit `datasetSearchNode` flow instead of inline dataset config on `chatNode` / `agent`
      - `datasetSearchNode` must include `datasetSelectList` and `userChatInput`
+     - unknown knowledge-base IDs must use 24-character numeric placeholders such as `000000000000000000000001`; never use Chinese text as a dataset ID placeholder
      - downstream AI nodes must reference dataset quote outputs such as `["datasetSearch-xxx","datasetQuoteQA"]`
      - use `datasetConcatNode` when multiple retrieval outputs need merging
      - only use inline dataset config on `chatNode` / `agent` if the user explicitly asks for that simpler structure
@@ -192,6 +193,7 @@ Always prefer bundled references in this skill folder (export-safe).
    - do not generate `ifElseNode` entries that only reference a variable without an operator or comparison value
 22. Knowledge-base retrieval configuration must be source-aligned:
    - if using `datasetSearchNode`, configure `datasetSelectList` and `userChatInput` explicitly
+   - unknown knowledge-base IDs must use 24-character numeric placeholders such as `000000000000000000000001`; do not use Chinese text, knowledge-base names, or descriptive words as `datasetId`
    - if downstream AI uses retrieval results, `quoteQA` must reference a valid `datasetQuote` output such as `datasetQuoteQA`
    - do not use `quoteQA` as a fake placeholder without an actual retrieval source
    - use `datasetConcatNode` when multiple dataset retrieval outputs need to be merged before downstream reference
