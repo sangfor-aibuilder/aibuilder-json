@@ -1,9 +1,9 @@
-# aibuilder-json-skill-protocol/v1
+# fastgpt-json-skill-protocol/v1
 
 Use this protocol when user asks for skill-protocol export.
 
 ```yaml
-protocol: aibuilder-json-skill-protocol/v1
+protocol: fastgpt-json-skill-protocol/v1
 meta:
   app_name: string
   mode: workflow

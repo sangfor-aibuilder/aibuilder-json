@@ -1,165 +1,144 @@
 # FastGPT JSON Generation Hard Rules
 
-These rules override older examples when generating import-ready workflow JSON.
+These rules override examples, model memory, and imported broken JSON.
 
-## 1. chatNode Business Input
+## 1. Runtime Compatibility
 
-Every `chatNode` must include at least one effective business data input. A `chatNode` with only `systemPrompt` is invalid.
+- Use runtime `flowNodeType` values only.
+- Treat `references/official-default-node-templates.json` as the highest-priority single-node default template source.
+- When a node type exists in the official template JSON, copy its default `inputs`, `outputs`, render types, value types, and dynamic system fields before filling scenario values.
+- Use input/output keys from the official template JSON first. `runtime-node-templates.md`, `node-field-contracts.md`, and `json-config-runtime-reference.md` are only secondary explanations and must not override official defaults.
+- Do not invent inputs, outputs, handles, dynamic schemas, or variable syntax.
+- Declaring an output in JSON does not make it valid. The key must be valid for that node type.
+- Runtime configuration must be in `node.inputs`, not `props`.
 
-At least one of these inputs must be configured with a non-empty value:
+## 2. Required Skeleton
 
-- `userChatInput.value`: reference `workflowStart.userChatInput`, parsed file text, form output, or upstream AI output.
-- `fileUrlList.value`: reference `workflowStart.userFiles` or another file array output.
-- `quoteQA.value`: explicit dataset quote configuration for knowledge-base retrieval.
+- Include one `workflowStart` node.
+- Include one `userGuide` node.
+- `workflowStart` must include `userChatInput` input and output `userChatInput`; add `userFiles` only for file-upload workflows.
+- `userGuide` must follow the official default system config inputs and have no business outputs.
+- Root `chatConfig.welcomeText` must be Markdown with Chinese title, usage, examples, and reminders.
 
-Recommended file workflow:
+## 3. Edges
 
-```json
-{
-  "key": "fileUrlList",
-  "renderTypeList": ["reference", "input"],
-  "label": "文件",
-  "valueType": "arrayString",
-  "value": ["workflowStart-xxx", "userFiles"]
-}
-```
+- Every edge must contain `source`, `sourceHandle`, `target`, `targetHandle`.
+- `source` and `target` must be node IDs only, never handle IDs.
+- Normal handles use `{nodeId}-source-right` and `{nodeId}-target-left`.
+- Do not use business data keys as visual edge handles. Invalid handles include `userFiles`, `system_text`, `answerText`, `userChatInput`, `fileUrlList`, `system_textareaInput`, and `text`.
+- Data references belong in node input values such as `["readFiles-001", "system_text"]`; edge handles are only canvas connection handles.
+- `ifElseNode` branch handles use `{nodeId}-source-IF`, `{nodeId}-source-ELSE IF 1`, or `{nodeId}-source-ELSE`.
+- `classifyQuestion` branch handles use `{nodeId}-source-{agentKey}`.
+- Every edge endpoint must exist.
 
-Recommended text workflow:
+## 4. References
 
-```json
-{
-  "key": "userChatInput",
-  "renderTypeList": ["reference", "textarea"],
-  "label": "用户输入",
-  "toolDescription": "用户问题",
-  "valueType": "string",
-  "required": true,
-  "value": ["readFiles-xxx", "system_text"]
-}
-```
+- Normal inputs use array references: `["nodeId", "outputKey"]`.
+- `answerNode.text.value` must be a string and must use template references such as `{{$nodeId.outputKey$}}`.
+- Never use array references such as `["nodeId", "outputKey"]` for `answerNode.text.value`.
+- `textEditor.system_textareaInput` uses template references: `{{$nodeId.outputKey$}}`.
+- Reject legacy references: `{{nodeId.outputKey}}`.
+- Reject display labels and invented output keys.
+- Reject `userGuide.variables.*`; `userGuide` is not a runtime variable emitter.
+- Reject dotted subpaths on invalid outputs, such as `{{$formInput.result.bookingDate$}}`.
+- Every reference must point to a node that is upstream of the consuming node in the visual edge graph.
+- A direct edge from the referenced node to the consuming node is not required when both nodes are already on the same connected upstream chain.
+- Do not create star-shaped direct edges merely because one downstream node consumes several upstream outputs.
+- Do not create input references to a node that is not upstream in the edge graph.
+- Do not create business nodes that are not reachable from `workflowStart`.
+- Every business path must be able to reach an `answerNode`.
 
-If the user uploads files and downstream logic needs document content, parse files first and reference the parsed text output instead of the raw file array.
+## 5. Output Key Whitelist
 
-Correct pattern:
+Use only these common fixed-template outputs:
 
-```json
-{
-  "file_parser": ["workflowStart-xxx", "userFiles"],
-  "chat_input": ["readFiles-xxx", "system_text"]
-}
-```
+- `workflowStart`: `userChatInput`, `userFiles`
+- `formInput`: `formInputResult`
+- `userSelect`: `selectResult`
+- `ifElseNode`: `ifElseResult`
+- `textEditor`: `system_text`
+- `chatNode`: `history`, `answerText`, `reasoningText`, `system_error_text`
+- `httpRequest468`: `httpRawResponse`, `error`, known dynamic outputs only
+- `readFiles`: `system_text`, `system_rawResponse`, `system_error_text`
+- `contentExtract`: `success`, `fields`, `system_error_text`
+- `datasetSearchNode`: `quoteQA`, `system_error_text`
+- `datasetConcatNode`: `quoteQA`
+- `classifyQuestion`: `cqResult`
+- `cfr`: `system_text`
+- `answerNode`, `userGuide`, `variableUpdate`: no business outputs
 
-Invalid pattern for text reasoning:
+Reject these recurring invalid keys:
 
-```json
-{
-  "chat_input": ["workflowStart-xxx", "userFiles"]
-}
-```
+- `formInput.result`
+- `chatNode.aiResponse`, `chatNode.newTitle`, `chatNode.quoteList`
+- `httpRequest468.system_httpResult`
+- `ifElseNode.IF`, `ifElseNode.ELSE`
+- Any field-level `contentExtract` output copied from `extractKeys`, such as `courseName`, `bookingDate`, `recommendedClassroom`, or `reason`
 
-## 2. answerNode Text Input
+## 6. Node-Specific Musts
 
-`answerNode` must use the sample-compatible `text` input shape.
+- `chatNode`: include required runtime controls `model` and `isResponseAnswerText`, and keep AI dialogue input configuration to the official five keys only: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, and `userChatInput`. At least one of `userChatInput`, `fileUrlList`, or `quoteQA` must be configured.
+- `chatNode`: start from the full official default input list. You may fill the core copy-safe fields `model`, `isResponseAnswerText`, `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, and `userChatInput`, but do not delete official control inputs such as `temperature`, `maxToken`, quote settings, vision/reasoning/top-p/stop/response-format/json-schema fields unless a known FastGPT export proves they are safely omitted.
+- `chatNode.model`: use a FastGPT LLM selector shape such as `renderTypeList: ["settingLLMModel", "reference"]`; avoid plain `["select"]` for generated import configs.
+- `chatNode`: do not add extra input keys for form fields, extracted fields, API responses, variables, scoring criteria, role data, metadata, or custom context. Put that content into `systemPrompt.value` or `userChatInput.value` manually, usually by referencing a prepared `textEditor.system_text`.
+- `chatNode -> answerNode`: set `isResponseAnswerText.value = false`.
+- `answerNode`: input key is `text`; use full sample-compatible text shape; `text.value` must be a string, not an array reference.
+- `textEditor`: put actual concat text in `system_textareaInput.value`; output `system_text`.
+- `contentExtract`: fill `content.value`; `extractKeys.value` must be non-empty; downstream uses `fields`, not per-field outputs.
+- `ifElseNode`: `ifElseList.value[]` group shape is `condition` + `list`; do not use `conditionList`; branch names are edge handles only.
+- `httpRequest468`: use `system_httpReqUrl`, `system_httpMethod`, `system_httpTimeout`; URL must not be empty; JSON body uses `system_httpJsonBody`; raw response is `httpRawResponse`.
+- `formInput`: fields stay in `userInputForms.value`; output `formInputResult`.
+- `userSelect`: options stay in `userSelectOptions.value`; output `selectResult`.
+- `readFiles`: downstream text logic uses `system_text`, not raw `userFiles`.
+- `cfr`: use `flowNodeType: "cfr"`, not `queryExtension`.
+- `tools`: use `flowNodeType: "tools"`, not `toolCall`.
 
-```json
-{
-  "key": "text",
-  "renderTypeList": ["textarea", "reference"],
-  "valueType": "any",
-  "required": true,
-  "isRichText": false,
-  "maxLength": 100000,
-  "label": "回复内容",
-  "value": "{{$chatNode-xxx.answerText$}}"
-}
-```
+## 7. Required Input Collection
 
-Use template variable style for `answerNode.text.value` by default. Do not use array style such as `["chatNode-xxx", "answerText"]` unless the user explicitly requests it.
+- Required user-provided text/number/select/switch/object data must be modeled as `formInput` fields or supported global config metadata.
+- Required files must use `workflowStart.userFiles`, `chatConfig.fileSelectConfig.canSelectFile = true`, and `readFiles` when text content is needed.
+- Do not rely on `systemPrompt`, `welcomeText`, node descriptions, or final answer text as the only collection mechanism.
 
-## 3. Canvas Layout Spacing
+## 8. Retrieval And Routing
 
-Generated node positions must use large spacing for readability.
+- Knowledge-base workflows default to explicit `datasetSearchNode`.
+- Multiple retrieval sources use `datasetConcatNode` before downstream AI.
+- Downstream AI consumes dataset quotes through `quoteQA`.
+- Classification/routing workflows default to `classifyQuestion`, not free-text `chatNode` plus string matching.
+- `classifyQuestion.agents` must be non-empty with stable unique keys and Chinese values.
 
-- Connected nodes must have x spacing >= `1500`.
-- Branch or sibling nodes must have y spacing >= `1000`.
-- Prefer column x positions such as `0`, `1500`, `3000`, `4500`, `6000`.
-- Prefer branch y positions such as `-1000`, `0`, `1000`, `2000`.
+## 9. Dynamic And Restricted Nodes
 
-Example:
+- Do not generate `appModule`, `pluginModule`, `tool`, `toolSet`, `toolParams`, `pluginInput`, or `pluginOutput` without a concrete target contract.
+- Do not use `agent` as a plain chat replacement; use it only with real tools, skills, datasets, or planning requirements.
+- Do not use `emptyNode`, `comment`, `stopTool`, or deprecated `app` in normal workflows unless explicitly required.
 
-```json
-[
-  { "nodeId": "workflowStart-001", "position": { "x": 0, "y": 0 } },
-  { "nodeId": "readFiles-001", "position": { "x": 1500, "y": 0 } },
-  { "nodeId": "chatNode-001", "position": { "x": 3000, "y": 0 } },
-  { "nodeId": "answerNode-pass-001", "position": { "x": 4500, "y": -1000 } },
-  { "nodeId": "answerNode-fail-001", "position": { "x": 4500, "y": 1000 } }
-]
-```
+## 10. Usability And Encoding
 
-## 4. UTF-8 File Encoding
+- All user-facing text must be Chinese.
+- Read and write JSON/Markdown as UTF-8.
+- Do not preserve mojibake.
+- Connected nodes should differ by at least `1500` on x.
+- Branch/sibling nodes should differ by at least `1000` on y.
+- Save generated JSON to disk by default and report the absolute path.
 
-All reads and writes must use UTF-8.
+## 11. Validation Is Mandatory
 
-- Read user-provided samples, reference JSON, and imported workflow files as UTF-8.
-- Write generated JSON, Markdown, and protocol exports as UTF-8.
-- Do not preserve mojibake in generated output. If a referenced sample appears garbled, infer structure only and regenerate human-facing labels/prompts as clean UTF-8 text.
-- If a source file cannot be safely decoded as UTF-8, do not rewrite it in-place unless the user explicitly asks for encoding repair.
+- Run `scripts/validate_fastgpt_json.py <generated-file>` after writing JSON.
+- Any `ERROR:` output is a blocking failure.
+- Fix and rerun until the script prints `VALIDATION_OK`.
+- Also apply `validation-checklist.md` for scenario-specific checks.
+- If the validator is missing, blocked, or not run, the output status is `未验证`, not `VALIDATION_OK`, and the JSON must not be described as directly import-ready.
 
-## 5. Chinese User-Facing Text
+## 12. Universal Generation Safety Mode
 
-All user-facing text in generated node configuration must be Chinese.
+- Generate a node inventory first, then copy runtime templates, then fill values, then generate edges last.
+- Copy runtime templates means copy the node object from `official-default-node-templates.json` first, then adjust `nodeId`, `name`, `position`, and scenario-specific `inputs[].value`.
+- Reject `workflowStart.inputs: []`.
+- Reject `chatNode` without `isResponseAnswerText`.
+- Reject normal edges whose handles are business keys instead of `{nodeId}-source-right` and `{nodeId}-target-left`.
+- Reject generated text containing mojibake markers such as `鐢`, `鏂`, `绯`, `鈫`, or `�`.
+- The final response must state one of: `VALIDATION_OK`, `未验证：未能运行校验脚本`, or `未通过：存在 ERROR`.
+- Never state that JSON can be imported directly if the deterministic validator was not run or did not pass.
 
-This includes:
 
-- Node `name`.
-- Input/output `label`, `description`, `toolDescription`, and `debugLabel`.
-- Form field labels, option labels, descriptions, and help text.
-- `systemPrompt`, user-facing prompt text, `welcomeText`, `instruction`, and answer labels.
-- Variable display names and business field names.
-
-Schema-required technical identifiers must remain compatible with FastGPT and may stay English:
-
-- `nodeId`
-- `key`
-- `flowNodeType`
-- source/target handle names
-- enum values required by the platform
-
-Do not output English placeholder labels such as `User input`, `Files`, or `Reply content`; use Chinese equivalents such as `用户输入`, `文件`, and `回复内容`.
-
-## 6. Default JSON File Save
-
-Generated FastGPT workflow JSON must be saved to disk by default.
-
-- Save the final import-ready JSON as a `.json` file.
-- Use UTF-8 encoding for the write.
-- If the user provides a target file path, use it.
-- If no target path is provided, derive a concise kebab-case filename from the workflow purpose, for example `hr-resume-screening.json`.
-- Save in the current workspace or the closest relevant project/sample directory.
-- Do not only print JSON in chat unless the user explicitly requests no file write.
-- The final response must include the saved absolute path.
-
-## 7. Markdown Welcome Text
-
-`chatConfig.welcomeText` must use Markdown format by default.
-
-Rules:
-
-- Start with a Chinese top-level heading such as `# 企业智能报销助手`.
-- Use short sections such as `## 你可以这样使用`, `## 示例`, and `## 提醒` when suitable.
-- Include the app purpose and supported usage modes.
-- Include 1-3 realistic Chinese example inputs, preferably using blockquote syntax.
-- Include upload, file, attachment, or required-input reminders when the workflow supports those capabilities.
-- Mention fallback or verification notes when the workflow may produce draft results, require review, or depend on knowledge-base coverage.
-- Do not generate a dense single-line plain-text welcome unless the user explicitly requests minimal/plain text.
-
-Example:
-
-```json
-{
-  "chatConfig": {
-    "welcomeText": "# 企业智能报销助手\n\n我可以帮你生成报销单、识别发票，并基于公司报销政策回答问题。\n\n## 你可以这样使用\n\n### 1. 直接生成报销单\n直接描述行程或费用事项即可生成报销单草稿。\n\n**示例：**\n> 我4月9日到12日到北京出差，请帮我生成报销单。\n\n## 提醒\n- 未上传发票时，也可以先生成草稿。\n- 正式提交前，请补充合规发票和相关附件。"
-  }
-}
-```

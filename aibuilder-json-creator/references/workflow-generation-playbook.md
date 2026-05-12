@@ -125,6 +125,8 @@ Rules:
 - resume parsing, form extraction, clause extraction, and entity extraction should prefer `contentExtract`
 - configure the extraction source in the default `content` input
 - `extractKeys` must be explicit and non-empty
+- downstream nodes must reference `contentExtract.fields`, not field-level outputs
+- do not generate outputs named after `extractKeys` items
 
 ### Pattern I: Explicit user choice -> route
 
@@ -155,6 +157,10 @@ upstream parameters -> `httpRequest468` -> downstream parse / answer
 
 Rules:
 - prefer `httpRequest468` over `code` for standard API calls
+- never leave `system_httpReqUrl.value` empty
+- if the real endpoint is unknown, use a clear placeholder URL and mark it replaceable
+- use `system_httpJsonBody` for JSON request bodies and populate it from upstream `textEditor.system_text` or a concrete JSON template
+- downstream nodes reference `httpRawResponse`
 
 ### Pattern M: Batch execution
 
@@ -195,9 +201,9 @@ Rules:
 `workflowStart/formInput` -> `datasetSearchNode` -> `chatNode.quoteQA` -> `answerNode`
 
 Rules:
-- `datasetSearchNode.datasetSelectList` must be configured.
+- `datasetSearchNode.datasets` must be configured.
 - `datasetSearchNode.userChatInput` must point to the real retrieval query.
-- downstream `chatNode.quoteQA` must reference `["datasetSearch-xxx", "datasetQuoteQA"]`.
+- downstream `chatNode.quoteQA` must reference `["datasetSearch-xxx", "quoteQA"]`.
 - This is the default strict pattern whenever the requirement includes knowledge-base retrieval.
 
 ### Pattern F: Multi-source retrieval merge
@@ -212,6 +218,9 @@ Rules:
 - `variable`
 - `condition`
 - `value` when the operator requires comparison input
+- group shape must be `condition` + `list`
+- do not use `conditionList`
+- branch outputs are not `IF` or `ELSE`; branch routing uses edge handles
 
 ### Pattern D: Enriched production baseline (recommended default)
 
@@ -234,7 +243,7 @@ Default for `answerNode.text` must match the sample-compatible shape:
 }
 ```
 
-Only use array style (`["nodeId","outputKey"]`) for `answerNode.text` when user explicitly requests it.
+Never use array style (`["nodeId","outputKey"]`) for `answerNode.text`. Use string template style such as `{{$chatNode-1.answerText$}}`.
 
 ## 6. Node-Specific Minimum Contracts
 

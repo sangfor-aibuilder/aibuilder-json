@@ -196,4 +196,4 @@
 - Generated workflow JSON must include a default system config node: `flowNodeType: "userGuide"`.
 - For designated reply nodes (`answerNode`), the `text` input should default to template-style variable reference:
   - `"value": "{{$nodeId.outputKey$}}"`
-- Do not output array-style reference for `answerNode.text` (for example `["nodeId","outputKey"]`) unless user explicitly requests that style.
+- Do not output array-style reference for `answerNode.text` (for example `["nodeId","outputKey"]`). `answerNode.text.value` must use string template style such as `{{$nodeId.outputKey$}}`.

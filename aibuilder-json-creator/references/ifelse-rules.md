@@ -16,10 +16,15 @@ Do not generate variable-only condition entries.
 
 ```json
 {
-  "variable": ["chatNode-xxx", "answerText"],
-  "condition": "include",
-  "value": "通过",
-  "valueType": "input"
+  "condition": "AND",
+  "list": [
+    {
+      "variable": ["chatNode-xxx", "answerText"],
+      "condition": "include",
+      "value": "通过",
+      "valueType": "string"
+    }
+  ]
 }
 ```
 
@@ -27,9 +32,23 @@ Do not generate variable-only condition entries.
 
 ```json
 {
+  "conditionList": [
+    {
+      "variable": ["chatNode-xxx", "answerText"],
+      "condition": "include",
+      "value": "通过"
+    }
+  ]
+}
+```
+
+```json
+{
   "variable": ["chatNode-xxx", "answerText"]
 }
 ```
+
+`conditionList` is invalid for generated JSON. Always use `ifElseList.value[].list`.
 
 ## Branch Design Notes
 
@@ -37,3 +56,5 @@ Do not generate variable-only condition entries.
 - The operator must match the data type and business meaning.
 - The comparison value must be explicit and deterministic.
 - Keep `IF / ELSE IF / ELSE` branches mutually understandable and testable.
+- `IF / ELSE IF / ELSE` are edge handles only. They must not be declared as node outputs.
+- The node output must be `ifElseResult` only.

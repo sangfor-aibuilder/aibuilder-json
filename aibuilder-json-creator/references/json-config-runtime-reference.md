@@ -1,4 +1,4 @@
-﻿# FastGPT Workflow Runtime Reference
+# FastGPT Workflow Runtime Reference
 
 This reference is source-aligned with `packages/global/core/workflow`.
 
@@ -164,7 +164,8 @@ Strict rules:
 Runtime:
 
 - `flowNodeType`: `chatNode`
-- key inputs include `model`, `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, `userChatInput`
+- runtime controls include `model` and `isResponseAnswerText`
+- official AI dialogue input configuration keys only: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, `userChatInput`
 - outputs: `history`, `answerText`, `reasoningText`, `system_error_text`
 
 Strict rules:
@@ -172,6 +173,7 @@ Strict rules:
 - At least one business input must be configured: `userChatInput`, `fileUrlList`, or `quoteQA`.
 - `systemPrompt` alone is invalid.
 - If document text is needed, prefer parsed text such as `["readFilesNodeId", "system_text"]`.
+- Do not add separate `chatNode` inputs for form fields, extracted fields, HTTP results, variables, or custom context; fold them into `systemPrompt` or `userChatInput`, usually via `textEditor.system_text`.
 
 ### 3.4 `textEditor`
 
@@ -613,3 +615,4 @@ Strict rules:
 - For `answerNode.text.value`, use template reference style by default.
 - For `textEditor.system_textareaInput.value`, use template reference style inside the text body.
 - For `contentExtract.content.value`, use array reference style unless the field is intentionally a text literal.
+

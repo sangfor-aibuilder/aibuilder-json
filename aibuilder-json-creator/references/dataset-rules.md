@@ -10,7 +10,7 @@ There are two valid patterns:
   - `datasetSearchNode` for retrieval
   - optional `datasetConcatNode` for merging multiple retrieval results
   - downstream `chatNode.quoteQA` references retrieval output
-- Inline retrieval on `chatNode` / `agent` by configuring dataset-related inputs such as `datasetSelectList`.
+- Inline retrieval on `chatNode` / `agent` by configuring official dataset-related inputs such as `datasets` and retrieval settings when those inputs exist in the official template.
 
 Do not treat `quoteQA` as a standalone retrieval source. It is a reference target for dataset quote results.
 
@@ -26,18 +26,18 @@ Strict default:
 
 Required inputs:
 
-- `datasetSelectList`
+- `datasets`
 - `userChatInput`
 
 Common retrieval parameters:
 
-- `datasetSimilarity`
-- `datasetMaxTokens`
-- `datasetSearchMode`
-- `datasetSearchEmbeddingWeight`
-- `datasetSearchUsingReRank`
-- `datasetSearchRerankModel`
-- `datasetSearchRerankWeight`
+- `similarity`
+- `limit`
+- `searchMode`
+- `embeddingWeight`
+- `usingReRank`
+- `rerankModel`
+- `rerankWeight`
 - `datasetSearchUsingExtensionQuery`
 - `datasetSearchExtensionModel`
 - `datasetSearchExtensionBg`
@@ -45,7 +45,7 @@ Common retrieval parameters:
 
 Expected output:
 
-- `datasetQuoteQA`
+- `quoteQA`
 
 ## 3. Correct Downstream Usage
 
@@ -55,7 +55,7 @@ If downstream AI needs knowledge-base references, use:
 {
   "key": "quoteQA",
   "valueType": "datasetQuote",
-  "value": ["datasetSearch-xxx", "datasetQuoteQA"]
+  "value": ["datasetSearch-xxx", "quoteQA"]
 }
 ```
 
@@ -68,7 +68,7 @@ Use `datasetConcatNode` when multiple retrieval branches need to be merged.
 Required behavior:
 
 - Input list items must be dataset quote references.
-- Output is `datasetQuoteQA`.
+- Output is `quoteQA`.
 - Downstream `chatNode.quoteQA` can reference the merged output.
 - If two or more dataset retrieval outputs exist, merging through `datasetConcatNode` is the default strict behavior.
 
@@ -78,8 +78,7 @@ When generating importable JSON:
 
 - Do not invent fake dataset business semantics.
 - If the user names concrete knowledge bases, preserve those names and IDs when provided.
-- If dataset IDs are unknown, use numeric placeholder IDs in MongoDB ObjectId-compatible 24-character format, such as `000000000000000000000001`, and clearly mark them as placeholders that the user must replace.
-- Dataset ID placeholders must not contain Chinese text, knowledge-base names, or descriptive words.
+- If dataset IDs are unknown, clearly mark them as placeholders that the user must replace.
 - Keep retrieval node names, labels, and descriptions in Chinese.
 
 ## 6. Retrieval Query Source

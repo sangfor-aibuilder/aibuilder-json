@@ -48,6 +48,30 @@ This tool works with **any AI agent platform that supports skills**, including:
 
 **For other platforms**: Follow your platform's skill installation guide and place the `aibuilder-json-config` folder in the appropriate skills directory.
 
+#### Python Requirements
+
+The `scripts/` directory contains Python utility scripts for validating and inspecting FastGPT JSON configurations:
+
+- `validate_fastgpt_json.py` — Validate workflow JSON against runtime contracts
+- `inspect_official_templates.py` — Print node IO contracts from templates
+
+**Prerequisites**:
+
+- Python 3.9+ installed on your system
+- No third-party dependencies required (uses only standard library)
+
+**Verify installation**:
+
+```bash
+python --version
+```
+
+**Usage example**:
+
+```bash
+python scripts/validate_fastgpt_json.py path/to/workflow.json
+python scripts/inspect_official_templates.py
+
 #### Basic Usage
 
 In Claude Code, describe your workflow requirements:
@@ -233,6 +257,30 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 2. 重启 Claude Code 或重新加载 skills
 
 **其他平台**：按照您平台的 skill 安装指南，将 `aibuilder-json-config` 文件夹放置到相应的 skills 目录。
+
+#### Python 环境要求
+
+`scripts/` 目录包含用于验证和检查 FastGPT JSON 配置的 Python 工具脚本：
+
+- `validate_fastgpt_json.py` — 验证工作流 JSON 是否符合运行时契约
+- `inspect_official_templates.py` — 打印模板中的节点 IO 契约
+
+**前置条件**：
+
+- 系统已安装 Python 3.9+
+- 无需第三方依赖（仅使用标准库）
+
+**验证安装**：
+
+```bash
+python --version
+```
+
+**使用示例**：
+
+```bash
+python scripts/validate_fastgpt_json.py path/to/workflow.json
+python scripts/inspect_official_templates.py
 
 #### 基础使用
 

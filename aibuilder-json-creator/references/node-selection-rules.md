@@ -48,7 +48,7 @@ Examples:
 - variable/state mutation -> `variableUpdate`, not `chatNode`
 - batch item processing -> `loop`, not duplicated node chains
 
-## 2. AI 对话节点 `chatNode`
+## 2. AI 瀵硅瘽鑺傜偣 `chatNode`
 
 Use when:
 
@@ -60,6 +60,7 @@ Must include:
 - `model`
 - `systemPrompt`
 - `history`
+- official AI dialogue input configuration keys only: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, `userChatInput`
 - at least one business input among:
   - `userChatInput`
   - `fileUrlList`
@@ -71,6 +72,7 @@ Strict rules:
 - if the node reasons over document content, prefer parsed text from `readFiles.system_text` or upstream extracted fields
 - if retrieval is required, `quoteQA` must reference a real retrieval output
 - if file references are used, the node must actually need file-aware input; otherwise prefer parsed text
+- do not add extra `chatNode` input keys for context; assemble extra context with `textEditor` and bind it through `systemPrompt` or `userChatInput`
 
 Do not use when:
 
@@ -79,7 +81,7 @@ Do not use when:
 - the task is deterministic text assembly -> use `textEditor`
 - the task is direct final fixed reply with no model reasoning -> use `answerNode`
 
-## 3. 文本内容提取节点 `contentExtract`
+## 3. 鏂囨湰鍐呭鎻愬彇鑺傜偣 `contentExtract`
 
 Use when:
 
@@ -108,7 +110,7 @@ Do not use when:
 - the task is free-form answer generation -> use `chatNode`
 - the task is explicit routing/classification -> use `classifyQuestion`
 
-## 4. 工具调用节点 `tools`
+## 4. 宸ュ叿璋冪敤鑺傜偣 `tools`
 
 Use when:
 
@@ -136,7 +138,7 @@ Do not use when:
 - the requirement is simple Q&A or summarization with no tool need
 - deterministic HTTP call or Laf call is enough
 
-## 5. 用户选择节点 `userSelect`
+## 5. 鐢ㄦ埛閫夋嫨鑺傜偣 `userSelect`
 
 Use when:
 
@@ -160,7 +162,7 @@ Do not use when:
 - the value is a structured form field -> use `formInput`
 - the value should be inferred from user text -> use `classifyQuestion` or `chatNode`
 
-## 6. 表单输入节点 `formInput`
+## 6. 琛ㄥ崟杈撳叆鑺傜偣 `formInput`
 
 Use when:
 
@@ -185,7 +187,7 @@ Do not use when:
 - the workflow only needs a single chat message already covered by `workflowStart.userChatInput`
 - the interaction is a forced discrete option choice -> `userSelect` may be better
 
-## 7. 文本拼接节点 `textEditor`
+## 7. 鏂囨湰鎷兼帴鑺傜偣 `textEditor`
 
 Use when:
 
@@ -207,7 +209,7 @@ Do not use when:
 
 - the node is expected to reason, extract, or classify
 
-## 8. 指定回复节点 `answerNode`
+## 8. 鎸囧畾鍥炲鑺傜偣 `answerNode`
 
 Use when:
 
@@ -225,7 +227,7 @@ Strict rules:
 - do not use `answerNode` as an intermediate storage node
 - if the reply is branch-specific, each branch may have its own `answerNode`
 
-## 9. 文档解析节点 `readFiles`
+## 9. 鏂囨。瑙ｆ瀽鑺傜偣 `readFiles`
 
 Use when:
 
@@ -245,7 +247,7 @@ Do not use when:
 
 - the workflow does not consume uploaded files
 
-## 10. HTTP 请求节点 `httpRequest468`
+## 10. HTTP 璇锋眰鑺傜偣 `httpRequest468`
 
 Use when:
 
@@ -271,7 +273,7 @@ Do not use when:
 - only local deterministic transformation is needed
 - Laf function integration is explicitly required -> use `lafModule`
 
-## 11. 判断器节点 `ifElseNode`
+## 11. 鍒ゆ柇鍣ㄨ妭鐐?`ifElseNode`
 
 Use when:
 
@@ -290,7 +292,7 @@ Strict rules:
 - do not use `ifElseNode` for user choice collection; use `userSelect`
 - do not use `ifElseNode` to emulate classification when `classifyQuestion` is the correct node
 
-## 12. 变量更新节点 `variableUpdate`
+## 12. 鍙橀噺鏇存柊鑺傜偣 `variableUpdate`
 
 Use when:
 
@@ -311,7 +313,7 @@ Do not use when:
 
 - the task is more naturally handled by `textEditor`, `httpRequest468`, or `code`
 
-## 13. 代码运行节点 `code`
+## 13. 浠ｇ爜杩愯鑺傜偣 `code`
 
 Use when:
 
@@ -331,7 +333,7 @@ Strict rules:
 - code must match the declared inputs/outputs
 - do not use `code` to compensate for missing node design
 
-## 14. 批量执行节点 `loop`
+## 14. 鎵归噺鎵ц鑺傜偣 `loop`
 
 Use when:
 
@@ -351,11 +353,11 @@ Strict rules:
 - `loopEnd` must collect the per-item result
 - downstream nodes consuming batch results should reference `loopArray`
 
-## 15. 知识库搜索引用合并 `datasetSearchNode` + `datasetConcatNode`
+## 15. 鐭ヨ瘑搴撴悳绱㈠紩鐢ㄥ悎骞?`datasetSearchNode` + `datasetConcatNode`
 
 Handled separately by `dataset-rules.md`.
 
-## 16. 问题优化节点 `cfr`
+## 16. 闂浼樺寲鑺傜偣 `cfr`
 
 Use when:
 
@@ -381,7 +383,7 @@ Do not use when:
 
 - the original query is already the final answer target and no rewrite step is needed
 
-## 17. Laf 函数调用节点 `lafModule`
+## 17. Laf 鍑芥暟璋冪敤鑺傜偣 `lafModule`
 
 Use when:
 
@@ -398,7 +400,7 @@ Strict rules:
 - do not substitute generic HTTP logic with `lafModule` unless the target is actually a Laf function
 - prefer `lafModule` over `httpRequest468` only when the business contract is Laf-specific
 
-## 18. 自定义反馈节点 `customFeedback`
+## 18. 鑷畾涔夊弽棣堣妭鐐?`customFeedback`
 
 Use when:
 
@@ -429,3 +431,4 @@ The generator must reject these patterns:
 - using `queryExtension` as a JSON `flowNodeType`; use `cfr`
 - leaving `textEditor.system_textareaInput` empty
 - leaving `contentExtract.content` empty while filling an invented extraction input
+

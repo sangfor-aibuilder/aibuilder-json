@@ -1,261 +1,169 @@
 # Node Field Contracts
 
-This file contains hard field-level rules for generated FastGPT workflow JSON.
+Use this file to reject invalid node fields, invented IO keys, and unsafe references. For copyable node shapes, use `official-default-node-templates.json` first. `runtime-node-templates.md` is only an explanatory guide and must not override official default fields.
 
-It exists to prevent invalid workflows caused by placing values into invented inputs while leaving runtime-required default inputs empty.
+## 1. Global Field Rules
 
-## 1. No Invented Required Inputs
+- Runtime configuration belongs in `node.inputs`, not `props`.
+- Do not create custom inputs that duplicate source-defined inputs.
+- Do not invent outputs to make references work.
+- Validate references against the upstream node type's runtime outputs, not against outputs declared by the generated JSON.
+- `userGuide` is not a variable emitter. Do not reference `userGuide.variables.*`.
 
-When a source template defines a concrete input key, generated JSON must configure that input key directly.
+## 2. Reference Rules
 
-Never create an extra custom input to carry the same value if the template already has a required/default input.
+Allowed reference styles:
 
-Invalid pattern:
+- Normal input reference: `["nodeId", "outputKey"]`
+- `answerNode.text.value`: string template style only, for example `{{$nodeId.outputKey$}}`
+- `textEditor.system_textareaInput.value`: template body with `{{$nodeId.outputKey$}}`
 
-```json
-{
-  "inputs": [
-    { "key": "context", "value": ["readFiles-001", "system_text"] },
-    { "key": "content", "value": "" }
-  ]
-}
-```
+Visual edge requirement:
 
-Valid pattern:
+- The referenced node must be upstream of the consuming node in the edge graph.
+- A direct edge from the referenced node to the consuming node is not required when the referenced node is already on the same upstream path.
+- Prefer one readable chain over many cross-links into a single node.
 
-```json
-{
-  "inputs": [
-    { "key": "content", "value": ["readFiles-001", "system_text"] }
-  ]
-}
-```
+Rejected:
 
-## 2. Text Editor Must Fill `system_textareaInput`
+- Legacy moustache: `{{nodeId.outputKey}}`
+- Array reference in `answerNode.text.value`, such as `["nodeId", "outputKey"]`
+- Display-label references
+- Invented subpaths such as `{{$formInput.result.bookingDate$}}`
+- `{{$userGuide.variables.apiBaseUrl$}}`
+- Any output key not listed in the runtime whitelist.
 
-The text concatenation node is `textEditor`.
+## 3. Runtime Output Whitelist
 
-Runtime contract:
+| Node type | Valid outputs |
+|---|---|
+| `workflowStart` | `userChatInput`, `userFiles` |
+| `userGuide` | none |
+| `formInput` | `formInputResult` |
+| `userSelect` | `selectResult` |
+| `ifElseNode` | `ifElseResult` |
+| `textEditor` | `system_text` |
+| `chatNode` | `history`, `answerText`, `reasoningText`, `system_error_text` |
+| `httpRequest468` | `httpRawResponse`, `error`, known dynamic outputs only |
+| `readFiles` | `system_text`, `system_rawResponse`, `system_error_text` |
+| `contentExtract` | `success`, `fields`, `system_error_text` |
+| `datasetSearchNode` | `quoteQA`, `system_error_text` |
+| `datasetConcatNode` | `quoteQA` |
+| `classifyQuestion` | `cqResult` |
+| `cfr` | `system_text` |
+| `answerNode` | none |
 
-- `flowNodeType`: `textEditor`
-- required input key: `system_textareaInput`
-- output key: `system_text`
+Common invalid keys:
 
-Rules:
+- `formInput.result`
+- `chatNode.aiResponse`, `chatNode.newTitle`, `chatNode.quoteList`
+- `httpRequest468.system_httpResult`
+- `ifElseNode.IF`, `ifElseNode.ELSE`
+- `contentExtract.courseName`, `contentExtract.bookingDate`, `contentExtract.recommendedClassroom`, or any other per-field extraction output
 
-- Put the actual concat template in `system_textareaInput.value`.
-- Include all variable references inside that text body.
-- Do not put references only in a separate context or custom input.
-- If `system_textareaInput.value` is empty, the node is invalid.
+## 4. Node-Specific Contracts
 
-Example:
+### `workflowStart`
 
-```json
-{
-  "flowNodeType": "textEditor",
-  "inputs": [
-    {
-      "key": "system_textareaInput",
-      "renderTypeList": ["textarea"],
-      "valueType": "string",
-      "required": true,
-      "label": "拼接文本",
-      "value": "请根据以下信息生成报告：\n\n用户问题：{{$workflowStart-001.userChatInput$}}\n解析内容：{{$readFiles-001.system_text$}}"
-    }
-  ],
-  "outputs": [
-    {
-      "id": "system_text",
-      "key": "system_text",
-      "type": "static",
-      "valueType": "string",
-      "label": "拼接结果"
-    }
-  ]
-}
-```
+- Must include input `userChatInput`.
+- Must output `userChatInput`.
+- Add `userFiles` only when chat file upload is enabled.
 
-## 3. Content Extract Must Fill `content`
+### `userGuide`
 
-The text content extraction node is `contentExtract`.
+- Must use the official default system config inputs.
+- Must use `outputs: []`.
+- Put welcome text, file settings, voice settings, and variables metadata in root `chatConfig`.
 
-Runtime contract:
+### `chatNode`
 
-- `flowNodeType`: `contentExtract`
-- required text input key: `content`
-- extraction config key: `extractKeys`
-- success output key: `success`
-- fields output key: `fields`
+- Required runtime controls: `model`, `isResponseAnswerText`.
+- Official AI dialogue input configuration whitelist: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, `userChatInput`.
+- Start from the official default `chatNode` template and preserve official control fields such as `temperature`, `maxToken`, quote settings, vision/reasoning/top-p/stop/response-format/json-schema fields unless a known FastGPT export proves they are safely omitted.
+- Must include `systemPrompt`, `history`, and at least one business input: `userChatInput`, `fileUrlList`, or `quoteQA`.
+- Do not add any other `chatNode.inputs[].key` for business/context data, including form fields, extraction fields, HTTP responses, variables, user profile fields, scoring dimensions, search text, or custom metadata.
+- When extra context is needed, assemble it before the AI node and reference it through `systemPrompt.value` or `userChatInput.value`; for deterministic assembly use `textEditor.system_text`, then bind that output to `userChatInput` or embed it in the prompt.
+- If followed by `answerNode`, `isResponseAnswerText.value` must be `false`.
+- Output only `answerText` for answer content; never `aiResponse`.
 
-Rules:
+### `answerNode`
 
-- The default "需要提取的文本" field is `content`.
-- Put the source text reference in `content.value`.
-- Do not create custom fields such as `extractText`, `inputText`, `context`, or `documentText` for the main extraction text.
+- Input key must be `text`.
+- Use full answer text shape: `renderTypeList`, `valueType`, `required`, `isRichText`, `maxLength`, `label`, `value`.
+- `text.value` must be a string. If referencing a `chatNode`, use `{{$chatNodeId.answerText$}}`.
+- Do not use `text.value: ["chatNodeId", "answerText"]`.
+
+### `textEditor`
+
+- Required input: `system_textareaInput`.
+- Put the actual concat/template content in `system_textareaInput.value`.
+- Output only `system_text`.
+
+### `contentExtract`
+
+- Required inputs: `model`, `description`, `history`, `content`, `extractKeys`.
+- Extraction source must be in `content.value`.
 - `extractKeys.value` must be non-empty.
+- Do not generate separate outputs for extracted fields. Downstream nodes must consume `fields`.
 
-Example:
+### `formInput`
 
-```json
-{
-  "flowNodeType": "contentExtract",
-  "inputs": [
-    {
-      "key": "content",
-      "renderTypeList": ["reference", "textarea"],
-      "label": "需要提取的文本",
-      "required": true,
-      "valueType": "string",
-      "value": ["readFiles-001", "system_text"]
-    },
-    {
-      "key": "extractKeys",
-      "renderTypeList": ["custom"],
-      "label": "",
-      "valueType": "any",
-      "value": [
-        {
-          "key": "姓名",
-          "desc": "候选人姓名",
-          "valueType": "string",
-          "required": true
-        }
-      ]
-    }
-  ]
-}
-```
+- Required inputs: `description`, `userInputForms`.
+- Field definitions stay inside `userInputForms.value`.
+- Output key is `formInputResult`; never `result`.
 
-## 4. Query Extension Must Use `cfr`
+### `userSelect`
 
-The question optimization node is named query extension in source code, but its runtime `flowNodeType` is `cfr`.
+- Required inputs: `description`, `userSelectOptions`.
+- Options stay inside `userSelectOptions.value`.
+- Output key is `selectResult`.
 
-Runtime contract:
+### `ifElseNode`
 
-- `flowNodeType`: `cfr`
-- inputs: `model`, `systemPrompt`, `history`, `userChatInput`
-- output: `system_text`
+- Required input: `ifElseList`.
+- `ifElseList.value[]` group shape is `condition` + `list`.
+- Do not use `conditionList`.
+- Branch names (`IF`, `ELSE IF N`, `ELSE`) are edge handles only, not outputs.
+- Output only `ifElseResult`.
 
-Rules:
+### `httpRequest468`
 
-- Always generate `"flowNodeType": "cfr"` for question optimization.
-- Never generate `"flowNodeType": "queryExtension"`.
-- Downstream query consumers must reference `["nodeId", "system_text"]`.
+- Required inputs: `system_httpReqUrl`, `system_httpMethod`, `system_httpTimeout`.
+- URL key is `system_httpReqUrl`, not `system_httpUrl`.
+- `system_httpReqUrl.value` must not be empty; use a replaceable placeholder if needed.
+- JSON request body uses `system_httpJsonBody`; it must not be empty when upstream data is sent.
+- Raw response output is `httpRawResponse`, not `system_httpResult`.
 
-## 5. Read Files Output Must Use `system_text`
+### `readFiles`
 
-Runtime contract:
+- Required input: `fileUrlList`.
+- Parsed text output is `system_text`.
+- Downstream text logic must consume `system_text`, not raw `userFiles`.
 
-- `flowNodeType`: `readFiles`
-- input: `fileUrlList`
-- parsed text output: `system_text`
-- raw parse output: `system_rawResponse`
+### `cfr`
 
-Rules:
+- Runtime type is `cfr`, not `queryExtension`.
+- Output is `system_text`.
 
-- Use `["readFilesNodeId", "system_text"]` for downstream text extraction, classification, judging, and answering.
-- Do not use `readFiles.text`; it is not the runtime output key.
+### `tools`
 
-## 6. Answer Node Input Must Use `text`
+- Runtime type is `tools`, not `toolCall`.
+- Must include model/prompt/history plus real tool-use business input.
 
-Runtime contract:
+### Dynamic Nodes
 
-- `flowNodeType`: `answerNode`
-- input: `text`
+Only generate these with a concrete supplied contract: `appModule`, `pluginModule`, `tool`, `toolSet`, `toolParams`, `pluginInput`, `pluginOutput`.
 
-Rules:
+Do not guess dynamic inputs, outputs, or `toolConfig`.
 
-- Do not use input key `answerText`.
-- Use full answer input shape and template reference style by default.
+### Agent
 
-## 7. Tool Call Must Use `tools`
+Use `agent` only when real planning, tool use, skills, or datasets are configured. Otherwise use `chatNode`.
 
-Runtime contract:
+### Placeholder/Deprecated Nodes
 
-- `flowNodeType`: `tools`
+- `emptyNode`: placeholder only.
+- `comment`: annotation only.
+- `stopTool`: tool termination only.
+- `app`: deprecated; use only when explicitly requested for legacy compatibility.
 
-Rules:
-
-- Never generate `"flowNodeType": "toolCall"`.
-
-## 8. System Config Must Use `userGuide`
-
-Runtime contract:
-
-- `flowNodeType`: `userGuide`
-
-Rules:
-
-- Never generate `"flowNodeType": "systemConfig"`.
-
-## 9. Form Input Fields Must Stay Inside `userInputForms`
-
-Runtime contract:
-
-- `flowNodeType`: `formInput`
-- form definitions input key: `userInputForms`
-- output: `formInputResult`
-
-Rules:
-
-- Put field definitions inside `userInputForms.value`.
-- Do not add separate sibling node inputs for each form field.
-
-## 10. User Select Options Must Stay Inside `userSelectOptions`
-
-Runtime contract:
-
-- `flowNodeType`: `userSelect`
-- options input key: `userSelectOptions`
-- output: `selectResult`
-
-Rules:
-
-- Put options inside `userSelectOptions.value`.
-- Do not add custom option inputs.
-
-## 11. Dynamic Contract Nodes Need Real Contracts
-
-These nodes have dynamic inputs/outputs and must not be generated with invented schemas:
-
-- `appModule`
-- `pluginModule`
-- `tool`
-- `toolSet`
-- `toolParams`
-- `pluginInput`
-- `pluginOutput`
-
-Rules:
-
-- Use them only when the user provides a concrete app/plugin/tool contract or target metadata.
-- Do not guess dynamic input keys.
-- Do not guess dynamic output keys.
-- For `tool` and `toolSet`, include valid `toolConfig`.
-- For plugin workflows, define meaningful `pluginInput` and `pluginOutput` fields according to the plugin contract.
-
-## 12. Agent Requires Real Orchestration Context
-
-The `agent` node is not a plain chat node.
-
-Rules:
-
-- Use `agent` only when planning, tool use, skill use, or agentic orchestration is required.
-- If no tool/skill/dataset context is configured, prefer `chatNode`.
-- `skills`, `agent_selectedTools`, and `datasets` must reference real configured resources when used.
-
-## 13. Placeholder and Annotation Nodes
-
-Rules:
-
-- `emptyNode` is for placeholder/import compatibility only; do not use in production workflows by default.
-- `comment` is for canvas notes only; it must not participate in runtime logic.
-- `stopTool` is only for terminating tool execution; it is not a final answer node.
-
-## 14. Deprecated Nodes
-
-Rules:
-
-- `app` is a legacy abandoned app-call node.
-- Do not use `app` unless the user explicitly requests legacy compatibility.
-- Prefer modern dynamic app calls only with a real `appModule` target contract.

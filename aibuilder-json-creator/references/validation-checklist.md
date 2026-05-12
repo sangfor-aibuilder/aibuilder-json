@@ -11,10 +11,24 @@
 - `nodeId` unique.
 - `flowNodeType` valid.
 - `inputs` and `outputs` arrays exist.
+- Declared outputs match the runtime output whitelist for the node type; invented outputs are not accepted just because they are declared in the JSON.
+- `formInput` output key is `formInputResult`, not `result`.
+- `chatNode` output keys are `history`, `answerText`, `reasoningText`, and `system_error_text`; no `aiResponse`, `newTitle`, or `quoteList`.
+- `httpRequest468` output uses `httpRawResponse` for raw responses; no `system_httpResult` unless a real dynamic output contract is supplied.
+- `ifElseNode` output is `ifElseResult`; no `IF`, `ELSE IF N`, or `ELSE` outputs.
+- `userGuide` does not act as a runtime variable emitter and should normally have empty `inputs` and `outputs`.
+- `contentExtract` outputs are only `success`, `fields`, and `system_error_text`; no per-field outputs copied from `extractKeys`.
+- `workflowStart` includes the `userChatInput` input and official `userChatInput` output; `userFiles` output appears only for file-upload workflows.
 - Required keys in node inputs are present (for node type).
+- Every `chatNode` includes the required runtime controls `model` and `isResponseAnswerText`.
+- Every generated `chatNode` includes the full standard set: `model`, `isResponseAnswerText`, `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, and `userChatInput`.
+- `chatNode.model.renderTypeList` uses a FastGPT LLM selector such as `settingLLMModel`, not plain `select`.
+- Every `chatNode` uses only the official AI dialogue input configuration keys: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, and `userChatInput`; aside from required runtime controls, no other `inputs[].key` is accepted.
 - Every `chatNode` has at least one configured business input among `quoteQA`, `fileUrlList`, and `userChatInput`.
 - `chatNode.systemPrompt` alone does not count as business input.
-- If `datasetSearchNode` is used, it includes `datasetSelectList` and `userChatInput`.
+- No `chatNode` adds separate inputs for form results, extraction fields, HTTP responses, variables, user profile fields, scoring dimensions, search text, or custom metadata; these must be manually folded into `systemPrompt` or `userChatInput`.
+- If a `chatNode` connects downstream to an `answerNode`, its `isResponseAnswerText.value` is `false` to avoid duplicate AI-node output and assigned-answer output.
+- If `datasetSearchNode` is used, it includes official `datasets` and `userChatInput` inputs.
 - If `classifyQuestion` is used, it includes `model`, `systemPrompt`, `history`, `userChatInput`, and non-empty `agents`.
 - If `contentExtract` is used, it includes `model`, `description`, `history`, filled `content`, and non-empty `extractKeys`.
 - If `tools` is used, it includes `model`, `systemPrompt`, `history`, and actual business input.
@@ -23,6 +37,10 @@
 - If `textEditor` is used, it includes filled `system_textareaInput`.
 - If `readFiles` is used, it includes a real `fileUrlList` reference.
 - If `httpRequest468` is used, it includes request URL/method/timeout and required payload metadata.
+- If `httpRequest468` is used, the URL key is `system_httpReqUrl`, not `system_httpUrl`.
+- If `httpRequest468` sends JSON, the request body uses `system_httpJsonBody`, not query params unless params are truly intended.
+- If `httpRequest468` is used, `system_httpReqUrl.value` is not empty.
+- If an HTTP request depends on upstream business data, its `system_httpJsonBody.value` is not empty and references a real upstream output.
 - If `variableUpdate` is used, every update item has a target variable and source/value.
 - If `code` is used, inputs and outputs are coherent with the code body.
 - If `loop` is used, it has a valid array input and a complete loop child structure.
@@ -39,8 +57,16 @@
 
 - For array references: `["nodeId","outputKey"]`, `nodeId` exists.
 - For template references: `{{$nodeId.outputKey$}}`, `nodeId` exists.
+- Referenced nodes are upstream of the consuming node in the visual edge graph.
+- A direct visual edge is not required for every reference when the referenced node is already upstream through the same chain.
+- No legacy moustache references such as `{{nodeId.outputKey}}` exist anywhere in node input values or `chatConfig`.
 - Referenced `outputKey` is defined by upstream node template or explicit output.
-- `quoteQA` references valid dataset quote outputs such as `datasetQuoteQA` when knowledge-base retrieval is used.
+- Referenced `outputKey` is a valid runtime output for the upstream node type, not only an invented declared output.
+- No references to invalid common keys: `formInput.result`, `chatNode.aiResponse`, `httpRequest468.system_httpResult`, `ifElseNode.IF`, or `ifElseNode.ELSE`.
+- No references to field-level `contentExtract` outputs such as `contentExtract.courseName`, `contentExtract.bookingDate`, or `contentExtract.recommendedClassroom`; use `contentExtract.fields`.
+- No template reference uses unsupported subpaths such as `{{$formInput.result.bookingDate$}}`; object outputs are passed through legal output keys such as `formInputResult`.
+- No references treat `userGuide` or `chatConfig.variables` as node outputs, such as `{{$userGuide.variables.apiBaseUrl$}}`.
+- `quoteQA` references valid dataset quote outputs such as `quoteQA` from `datasetSearchNode` or `datasetConcatNode` when knowledge-base retrieval is used.
 - Classification routing uses stable category keys from `agents`.
 - `contentExtract.content` references actual text, not raw file arrays.
 - `textEditor` and `answerNode` references point to existing upstream outputs.
@@ -52,7 +78,11 @@
 ## D. Edges
 
 - `source` and `target` exist.
+- Every edge has all four fields: `source`, `sourceHandle`, `target`, and `targetHandle`.
+- `source` and `target` are node IDs only, not handles.
+- No edge uses values like `workflowStart-source-right` as `source` or `chatNode-target-left` as `target`.
 - Normal handles use `-source-right` and `-target-left`.
+- Normal edge handles are full node-side handles such as `{nodeId}-source-right` and `{nodeId}-target-left`, not business keys such as `system_text`, `answerText`, `userFiles`, `userChatInput`, `fileUrlList`, `system_textareaInput`, or `text`.
 - `ifElseNode` uses branch handles:
   - `...-source-IF`
   - `...-source-ELSE IF 1`
@@ -64,6 +94,9 @@
 - Every `ifElseNode` rule item includes `condition`.
 - Every `ifElseNode` rule item includes `value` when the operator requires comparison input.
 - No variable-only condition entries exist.
+- Every condition variable references an existing upstream runtime output key.
+- Branch labels `IF`, `ELSE IF N`, and `ELSE` appear only in edge `sourceHandle`, not in `outputs`.
+- `ifElseList.value[]` group objects use `condition` and `list`; `conditionList` is rejected.
 
 ## E. File Upload
 
@@ -75,8 +108,7 @@
 
 ## E2. Dataset Retrieval
 
-- `datasetSearchNode.datasetSelectList` is not empty when knowledge-base retrieval is required.
-- Unknown `datasetId` placeholders use 24-character numeric ObjectId-compatible strings such as `000000000000000000000001`, not Chinese text or descriptive names.
+- `datasetSearchNode.datasets` is not empty when knowledge-base retrieval is required.
 - `datasetSearchNode.userChatInput` is configured with the real retrieval query source.
 - `datasetConcatNode` only merges dataset quote references.
 - Downstream `chatNode.quoteQA` references retrieval outputs rather than fake placeholders.
@@ -95,7 +127,8 @@
 
 - `answerNode` input key must be `text`.
 - Default `answerNode.text.value` uses template format: `{{$nodeId.outputKey$}}`.
-- If array reference style is used for `answerNode.text.value`, it must be explicitly requested by user.
+- `answerNode.text.value` must be a string and must not use array reference style.
+- If `answerNode.text.value` references a `chatNode`, the output key is `answerText`, not `aiResponse`.
 - `answerNode.text` uses the sample-compatible full input shape:
   - `renderTypeList: ["textarea", "reference"]`
   - `valueType: "any"`
@@ -126,6 +159,7 @@
 - Input samples and reference JSON were read as UTF-8.
 - Generated JSON/Markdown/protocol output is written as UTF-8.
 - Generated labels, prompts, and welcome text do not contain mojibake.
+- Generated JSON contains none of these mojibake markers: `鐢`, `鏂`, `绯`, `鈫`, `�`.
 - Generated workflow JSON was saved to a `.json` file using UTF-8 unless the user explicitly requested no file write.
 
 ## J. Language
@@ -165,6 +199,18 @@
 - System config uses `userGuide`, not `systemConfig`.
 - Tool call uses `tools`, not `toolCall`.
 - Query extension/question optimization uses `cfr`, not `queryExtension`.
+- Runtime node configuration is not placed in `props`.
+- Runtime node output keys are not invented or copied from legacy examples.
+- `chatNode` has `model`, `systemPrompt`, `history`, `isResponseAnswerText`, and any official business inputs in `inputs`, not in `props`.
+- `chatNode` outputs do not use legacy keys such as `aiResponse`, `newTitle`, or `quoteList`.
+- `formInput` has `description` and `userInputForms` in `inputs`, not in `props`.
+- `formInput` output is `formInputResult`, not `result`.
+- `userSelect` has `description` and `userSelectOptions` in `inputs`, not in `props`.
+- `ifElseNode` has `ifElseList` in `inputs`, not `props.conditions`.
+- `ifElseNode` branch names are edge handles only and are not declared as outputs.
+- `httpRequest468` URL key is `system_httpReqUrl`, not `system_httpUrl`.
+- `httpRequest468` raw response output is `httpRawResponse`, not `system_httpResult`.
+- System variables are not referenced through `userGuide.variables`.
 - `contentExtract` extraction source is in `content.value`.
 - No invented custom extraction input replaces `content`.
 - `textEditor` concat content is in `system_textareaInput.value`.
@@ -180,3 +226,12 @@
 - Plugin workflows use `pluginConfig`, `pluginInput`, and `pluginOutput`; normal app workflows do not include them by default.
 - `toolParams` is not emitted as an empty standalone node.
 - `stopTool` appears only in tool-call termination flows.
+
+## P. Deterministic Validator
+
+- Run `scripts/validate_fastgpt_json.py <generated-file>` after saving the workflow JSON.
+- The validator must print `VALIDATION_OK`.
+- Any `ERROR:` line is a blocking failure; fix JSON and rerun.
+- Do not mark a workflow as import-ready if the deterministic validator has not passed.
+- If the validator cannot be run, final status must be `未验证`, not `VALIDATION_OK`.
+
