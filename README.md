@@ -71,6 +71,7 @@ python --version
 ```bash
 python scripts/validate_fastgpt_json.py path/to/workflow.json
 python scripts/inspect_official_templates.py
+```
 
 #### Basic Usage
 
@@ -281,6 +282,7 @@ python --version
 ```bash
 python scripts/validate_fastgpt_json.py path/to/workflow.json
 python scripts/inspect_official_templates.py
+```
 
 #### 基础使用
 
