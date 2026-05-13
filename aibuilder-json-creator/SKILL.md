@@ -1,5 +1,5 @@
 ---
-name: fastgpt-json-config
+name: aibuilder-json-creator
 description: Generate, repair, and validate import-ready FastGPT workflow JSON from natural-language requirements or existing JSON. Use for FastGPT agents/workflows, broken JSON imports, node/edge/reference validation, strict runtime node IO, Markdown chatConfig, and deterministic acceptance checks.
 ---
 
