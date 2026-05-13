@@ -24,6 +24,20 @@ AIBuilder JSON Creator is a professional tool that transforms natural-language b
 
 ### 🚀 Quick Start
 
+#### 📖 Complete User Guide
+
+**New to AIBuilder JSON Creator?** Check out our comprehensive guide:
+
+👉 **[AIBuilder JSON Creator 使用指南 - 从零开始，用 AI 对话创作你的智能体工作流](https://ecnrz718f2z4.feishu.cn/wiki/HHAfwmdo2ipesnkRn2yclfY8ng7?from=from_copylink)**
+
+This guide covers:
+- Step-by-step installation with CoStrict.ai
+- How to brainstorm workflows with AI (even if you don't know what to build)
+- Real-world examples (healthcare, HR, finance, education, etc.)
+- Complete workflow creation loop: Planning → Generation → Knowledge Base → Optimization
+
+---
+
 #### Platform Compatibility
 
 This tool works with **any AI agent platform that supports skills**, including:
@@ -234,6 +248,20 @@ AIBuilder JSON Creator 是一个专业工具，可以将自然语言业务需求
 - **完整文档**：所有节点类型和配置的详细参考
 
 ### 🚀 快速开始
+
+#### 📖 完整使用指南
+
+**第一次使用 AIBuilder JSON Creator？** 查看我们的完整指南：
+
+👉 **[AIBuilder JSON Creator 使用指南 - 从零开始，用 AI 对话创作你的智能体工作流](https://ecnrz718f2z4.feishu.cn/wiki/HHAfwmdo2ipesnkRn2yclfY8ng7?from=from_copylink)**
+
+本指南包含：
+- 使用 CoStrict.ai 的详细安装步骤
+- 如何通过 AI 对话启发式思考工作流创意（即使你不知道该做什么）
+- 真实场景案例（医疗、HR、金融、教育等）
+- 完整工作流创作闭环：需求规划 → JSON生成 → 知识库初始化 → 使用优化迭代
+
+---
 
 #### 平台兼容性
 
