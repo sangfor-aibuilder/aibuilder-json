@@ -1,4 +1,4 @@
-# AIBuilder JSON Config
+# AIBuilder JSON Creator
 
 > Enterprise-grade FastGPT workflow JSON generator by Sangfor
 
@@ -10,9 +10,9 @@
 
 ## English
 
-### 🎯 What is AIBuilder JSON Config?
+### 🎯 What is AIBuilder JSON Creator?
 
-AIBuilder JSON Config is a professional tool that transforms natural-language business requirements into production-ready FastGPT workflow JSON configurations. Developed by **Sangfor**, this tool ensures your AI workflows are correctly structured, validated, and import-ready.
+AIBuilder JSON Creator is a professional tool that transforms natural-language business requirements into production-ready FastGPT workflow JSON configurations. Developed by **Sangfor**, this tool ensures your AI workflows are correctly structured, validated, and import-ready.
 
 ### ✨ Key Features
 
@@ -38,15 +38,15 @@ This tool works with **any AI agent platform that supports skills**, including:
 
 **For Claude Code** (example):
 
-1. Copy the `aibuilder-json-config` folder to your skills directory:
+1. Copy the `aibuilder-json-creator` folder to your skills directory:
    
    ```bash
-   cp -r aibuilder-json-config ~/.claude/skills/
+   cp -r aibuilder-json-creator ~/.claude/skills/
    ```
 
 2. Restart Claude Code or reload skills
 
-**For other platforms**: Follow your platform's skill installation guide and place the `aibuilder-json-config` folder in the appropriate skills directory.
+**For other platforms**: Follow your platform's skill installation guide and place the `aibuilder-json-creator` folder in the appropriate skills directory.
 
 #### Python Requirements
 
@@ -221,9 +221,9 @@ Join the **AIBuilder Developer Community** for:
 
 ## 中文
 
-### 🎯 什么是 AIBuilder JSON Config？
+### 🎯 什么是 AIBuilder JSON Creator？
 
-AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求转换为生产就绪的 FastGPT 工作流 JSON 配置。由**SANGFOR AIBuilder Team**开发，确保您的 AI 工作流结构正确、经过验证且可直接导入。
+AIBuilder JSON Creator 是一个专业工具，可以将自然语言业务需求转换为生产就绪的 FastGPT 工作流 JSON 配置。由**SANGFOR AIBuilder Team**开发，确保您的 AI 工作流结构正确、经过验证且可直接导入。
 
 ### ✨ 核心功能
 
@@ -249,15 +249,15 @@ AIBuilder JSON Config 是一个专业工具，可以将自然语言业务需求�
 
 **以 Claude Code 为例**：
 
-1. 将 `aibuilder-json-config` 文件夹复制到 skills 目录：
+1. 将 `aibuilder-json-creator` 文件夹复制到 skills 目录：
    
    ```bash
-   cp -r aibuilder-json-config ~/.claude/skills/
+   cp -r aibuilder-json-creator ~/.claude/skills/
    ```
 
 2. 重启 Claude Code 或重新加载 skills
 
-**其他平台**：按照您平台的 skill 安装指南，将 `aibuilder-json-config` 文件夹放置到相应的 skills 目录。
+**其他平台**：按照您平台的 skill 安装指南，将 `aibuilder-json-creator` 文件夹放置到相应的 skills 目录。
 
 #### Python 环境要求
 
