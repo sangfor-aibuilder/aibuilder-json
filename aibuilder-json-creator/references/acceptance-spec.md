@@ -8,7 +8,7 @@ This is the public acceptance gate for every generated or repaired workflow JSON
 - `nodes` is a non-empty array.
 - `edges` is an array.
 - `chatConfig.welcomeText` is Markdown Chinese text.
-- If files are required, `chatConfig.fileSelectConfig.canSelectFile` is `true`.
+- If files are required, `chatConfig.fileSelectConfig` enables at least one file channel switch matching the required file categories: documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with a non-empty `customFileExtensionList`.
 
 ## Gate 2. Required Skeleton
 
@@ -16,7 +16,8 @@ This is the public acceptance gate for every generated or repaired workflow JSON
 - Exactly one `userGuide` node.
 - `workflowStart.inputs` contains `userChatInput`.
 - Official default `workflowStart.outputs` contains `userChatInput`; add `userFiles` only when file upload is required.
-- If `workflowStart.outputs` includes `userFiles`, `chatConfig.fileSelectConfig.canSelectFile` must be `true`.
+- If `workflowStart.outputs` includes `userFiles`, `chatConfig.fileSelectConfig` must enable at least one file channel switch matching the required file categories (`canSelectFile`/`canSelectImg`/`canSelectAudio`/`canSelectVideo`/`canSelectCustomFileExtension`).
+- If a `readFiles` node exists, `chatConfig.fileSelectConfig.canSelectFile` must be `true`; if `canSelectCustomFileExtension` is `true`, `customFileExtensionList` must be non-empty.
 - `userGuide.inputs` follows the official default system config inputs and `userGuide.outputs` is empty.
 
 ## Gate 3. Node Contracts

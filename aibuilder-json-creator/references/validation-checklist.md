@@ -100,9 +100,10 @@
 
 ## E. File Upload
 
-- If file upload required, `chatConfig.fileSelectConfig.canSelectFile=true`.
+- If file upload required, `chatConfig.fileSelectConfig` enables at least one file channel switch matching the required file categories (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with a non-empty `customFileExtensionList`).
 - If using chat upload, file flow starts from `workflowStart.userFiles`.
-- If parsing files, `readFiles.fileUrlList` references file array output.
+- If parsing documents, `readFiles.fileUrlList` references file array output and `canSelectFile` is `true`.
+- If images must be understood, `canSelectImg` is `true` and a vision-capable `chatNode`/`tools` receives `fileUrlList`.
 - If downstream nodes need document text/content, they reference parsed outputs such as `readFiles.system_text` instead of raw `userFiles`.
 - File-driven extraction, classification, and reasoning use parsed text outputs rather than raw file arrays unless the downstream node is explicitly file-aware.
 
@@ -172,8 +173,8 @@
 ## K. Required Input Collection
 
 - Every required user-provided text/number/select/switch/object input is modeled as a system config global variable or `formInput` field.
-- Every required file input is modeled with `workflowStart.userFiles` and `chatConfig.fileSelectConfig.canSelectFile = true`.
-- Required file content is routed through `readFiles` when downstream nodes need parsed text.
+- Every required file input is modeled with `workflowStart.userFiles` and the matching `chatConfig.fileSelectConfig` file channel switches (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with a non-empty `customFileExtensionList`).
+- Required document content is routed through `readFiles` when downstream nodes need parsed text; required image understanding goes to a vision-capable `chatNode`/`tools` via `fileUrlList`.
 - No required input is requested only through `systemPrompt`, `welcomeText`, node descriptions, or answer text.
 - Every required input has clear Chinese label and input guidance.
 

@@ -1,0 +1,286 @@
+{
+  "nodes": [
+    {
+      "nodeId": "userGuide",
+      "name": "对话开场配置",
+      "intro": "",
+      "avatar": "core/workflow/template/systemConfig",
+      "flowNodeType": "userGuide",
+      "position": { "x": 0, "y": 0 },
+      "version": "481",
+      "inputs": [
+        { "key": "welcomeText", "renderTypeList": ["hidden"], "valueType": "string", "label": "欢迎语", "value": "" },
+        { "key": "variables", "renderTypeList": ["hidden"], "valueType": "any", "label": "全局变量", "value": [] },
+        {
+          "key": "questionGuide",
+          "renderTypeList": ["hidden"],
+          "valueType": "any",
+          "label": "问题引导",
+          "value": { "open": false }
+        },
+        { "key": "tts", "renderTypeList": ["hidden"], "valueType": "any", "label": "", "value": { "type": "web" } },
+        {
+          "key": "whisper",
+          "renderTypeList": ["hidden"],
+          "valueType": "any",
+          "label": "",
+          "value": { "open": false, "autoSend": false, "autoTTSResponse": false }
+        },
+        { "key": "scheduleTrigger", "renderTypeList": ["hidden"], "valueType": "any", "label": "", "value": null }
+      ],
+      "outputs": []
+    },
+    {
+      "nodeId": "workflowStart",
+      "name": "工作流入口",
+      "intro": "",
+      "avatar": "core/workflow/template/workflowStart",
+      "flowNodeType": "workflowStart",
+      "position": { "x": 1500, "y": 0 },
+      "version": "481",
+      "inputs": [
+        {
+          "key": "userChatInput",
+          "renderTypeList": ["reference", "textarea"],
+          "valueType": "string",
+          "label": "用户问题",
+          "required": true,
+          "toolDescription": "用户问题"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "userChatInput",
+          "key": "userChatInput",
+          "label": "用户问题",
+          "type": "static",
+          "valueType": "string",
+          "description": ""
+        },
+        {
+          "id": "userFiles",
+          "key": "userFiles",
+          "label": "用户上传的文件",
+          "type": "static",
+          "valueType": "arrayString",
+          "description": "用户在本轮对话中上传的文件（含文档与图片）"
+        }
+      ]
+    },
+    {
+      "nodeId": "readFiles",
+      "name": "文档解析",
+      "intro": "解析本轮对话上传的文档，并返回对应文档内容",
+      "avatar": "core/workflow/template/readFiles",
+      "flowNodeType": "readFiles",
+      "showStatus": true,
+      "position": { "x": 3000, "y": 0 },
+      "version": "4.9.2",
+      "inputs": [
+        {
+          "key": "fileUrlList",
+          "renderTypeList": ["reference"],
+          "valueType": "arrayString",
+          "label": "文档链接",
+          "required": true,
+          "value": [["workflowStart", "userFiles"]]
+        }
+      ],
+      "outputs": [
+        {
+          "id": "system_text",
+          "key": "system_text",
+          "label": "文档解析结果",
+          "description": "文档原文，由文件名和文档内容组成",
+          "valueType": "string",
+          "type": "static"
+        },
+        {
+          "id": "system_rawResponse",
+          "key": "system_rawResponse",
+          "label": "原始响应",
+          "valueType": "arrayObject",
+          "type": "static"
+        },
+        {
+          "id": "system_error_text",
+          "key": "system_error_text",
+          "type": "error",
+          "valueType": "string",
+          "label": "错误信息"
+        }
+      ],
+      "catchError": false
+    },
+    {
+      "nodeId": "chatNode",
+      "name": "简历综合助手",
+      "intro": "结合解析出的文档文本与用户上传的图片进行综合分析",
+      "avatar": "core/workflow/template/aiChat",
+      "flowNodeType": "chatNode",
+      "showStatus": true,
+      "position": { "x": 4500, "y": 0 },
+      "version": "4.9.7",
+      "inputs": [
+        {
+          "key": "model",
+          "renderTypeList": ["settingLLMModel", "reference"],
+          "label": "AI 模型",
+          "valueType": "string",
+          "value": "qwen-vl-plus"
+        },
+        { "key": "temperature", "renderTypeList": ["hidden"], "label": "", "valueType": "number" },
+        { "key": "maxToken", "renderTypeList": ["hidden"], "label": "", "valueType": "number" },
+        {
+          "key": "isResponseAnswerText",
+          "renderTypeList": ["hidden"],
+          "label": "",
+          "value": false,
+          "valueType": "boolean"
+        },
+        { "key": "aiChatVision", "renderTypeList": ["hidden"], "label": "", "value": true, "valueType": "boolean" },
+        {
+          "key": "aiChatReasoning",
+          "renderTypeList": ["hidden"],
+          "label": "",
+          "value": false,
+          "valueType": "boolean"
+        },
+        {
+          "key": "systemPrompt",
+          "renderTypeList": ["textarea", "reference"],
+          "valueType": "string",
+          "label": "提示词",
+          "maxLength": 100000,
+          "isRichText": true,
+          "value": "你是招聘筛选助手。优先依据下方文档内容（{{$readFiles.system_text$}}）中的候选人信息进行筛选；若用户同时上传了图片（如作品截图、证书照片），请结合图片内容综合判断。请基于事实回答，不要臆造简历中不存在的经历。",
+          "description": "模型固定的引导词"
+        },
+        {
+          "key": "history",
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "chatHistory",
+          "label": "聊天记录",
+          "required": true,
+          "min": 0,
+          "max": 50,
+          "value": 6
+        },
+        {
+          "key": "quoteQA",
+          "renderTypeList": ["settingDatasetQuotePrompt"],
+          "label": "",
+          "debugLabel": "知识库引用",
+          "valueType": "datasetQuote"
+        },
+        {
+          "key": "fileUrlList",
+          "renderTypeList": ["reference", "input"],
+          "label": "文件链接",
+          "debugLabel": "文件链接",
+          "description": "用户上传的文档和图片链接",
+          "valueType": "arrayString",
+          "value": [["workflowStart", "userFiles"]]
+        },
+        {
+          "key": "userChatInput",
+          "renderTypeList": ["reference", "textarea"],
+          "valueType": "string",
+          "label": "用户问题",
+          "toolDescription": "用户问题",
+          "required": true,
+          "value": ["workflowStart", "userChatInput"]
+        }
+      ],
+      "outputs": [
+        {
+          "id": "history",
+          "key": "history",
+          "required": true,
+          "label": "新的上下文",
+          "description": "将本次回复内容拼接上历史记录",
+          "valueType": "chatHistory",
+          "type": "static"
+        },
+        {
+          "id": "answerText",
+          "key": "answerText",
+          "required": true,
+          "label": "AI 回复内容",
+          "description": "AI 模型对本次对话的回复",
+          "valueType": "string",
+          "type": "static"
+        },
+        {
+          "id": "reasoningText",
+          "key": "reasoningText",
+          "required": false,
+          "label": "思考过程",
+          "valueType": "string",
+          "type": "static"
+        },
+        {
+          "id": "system_error_text",
+          "key": "system_error_text",
+          "type": "error",
+          "valueType": "string",
+          "label": "错误信息"
+        }
+      ],
+      "catchError": false
+    },
+    {
+      "nodeId": "answer",
+      "name": "指定回复",
+      "intro": "输出最终结果",
+      "avatar": "core/workflow/template/reply",
+      "flowNodeType": "answerNode",
+      "position": { "x": 6000, "y": 0 },
+      "inputs": [
+        {
+          "key": "text",
+          "renderTypeList": ["textarea", "reference"],
+          "valueType": "any",
+          "required": true,
+          "isRichText": false,
+          "maxLength": 100000,
+          "label": "回复的内容",
+          "value": "{{$chatNode.answerText$}}"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "workflowStart",
+      "target": "readFiles",
+      "sourceHandle": "workflowStart-source-right",
+      "targetHandle": "readFiles-target-left"
+    },
+    {
+      "source": "readFiles",
+      "target": "chatNode",
+      "sourceHandle": "readFiles-source-right",
+      "targetHandle": "chatNode-target-left"
+    },
+    {
+      "source": "chatNode",
+      "target": "answer",
+      "sourceHandle": "chatNode-source-right",
+      "targetHandle": "answer-target-left"
+    }
+  ],
+  "chatConfig": {
+    "welcomeText": "# 招聘简历筛选助手\n\n请上传候选人的**简历文档**（支持 PDF / Word / TXT / Markdown 等）以及可选的**作品截图或证书图片**，并说明你的筛选要求，例如：\n\n- 示例：**从这批简历中筛选出有 3 年以上 Go 后端经验、本科及以上学历的候选人。**\n- 示例：**这份简历和这张获奖证书对应的是同一个人吗？**\n\n> 提示：可一次上传多份简历，系统将逐份解析后统一分析。",
+    "variables": [],
+    "fileSelectConfig": {
+      "canSelectFile": true,
+      "canSelectImg": true,
+      "canLocalUpload": true,
+      "canUrlUpload": false,
+      "maxFiles": 10
+    },
+    "scheduledTriggerConfig": { "cronString": "", "timezone": "Asia/Shanghai", "defaultPrompt": "" }
+  }
+}

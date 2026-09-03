@@ -67,7 +67,7 @@ Common invalid keys:
 
 - Must include input `userChatInput`.
 - Must output `userChatInput`.
-- Add `userFiles` only when chat file upload is enabled.
+- Add `userFiles` only when chat file upload is enabled, and enable the matching `chatConfig.fileSelectConfig` file channels for the required file categories (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with non-empty `customFileExtensionList`; see `references/file-format-rules.md`).
 
 ### `userGuide`
 
@@ -81,6 +81,7 @@ Common invalid keys:
 - Official AI dialogue input configuration whitelist: `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, `userChatInput`.
 - Start from the official default `chatNode` template and preserve official control fields such as `temperature`, `maxToken`, quote settings, vision/reasoning/top-p/stop/response-format/json-schema fields unless a known FastGPT export proves they are safely omitted.
 - Must include `systemPrompt`, `history`, and at least one business input: `userChatInput`, `fileUrlList`, or `quoteQA`.
+- `fileUrlList` carries the user-uploaded documents and images; image understanding requires a vision-capable model on this `chatNode` (`canSelectImg` must be enabled in `chatConfig.fileSelectConfig`).
 - Do not add any other `chatNode.inputs[].key` for business/context data, including form fields, extraction fields, HTTP responses, variables, user profile fields, scoring dimensions, search text, or custom metadata.
 - When extra context is needed, assemble it before the AI node and reference it through `systemPrompt.value` or `userChatInput.value`; for deterministic assembly use `textEditor.system_text`, then bind that output to `userChatInput` or embed it in the prompt.
 - If followed by `answerNode`, `isResponseAnswerText.value` must be `false`.
@@ -139,6 +140,7 @@ Common invalid keys:
 - Required input: `fileUrlList`.
 - Parsed text output is `system_text`.
 - Downstream text logic must consume `system_text`, not raw `userFiles`.
+- Parses text-bearing documents only; images and other non-text files are understood through vision-capable `chatNode`/`tools` nodes via `fileUrlList` (see `references/file-format-rules.md`).
 
 ### `cfr`
 

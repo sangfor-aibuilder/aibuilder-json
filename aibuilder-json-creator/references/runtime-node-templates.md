@@ -43,7 +43,7 @@ Every generated workflow must include:
 - `whisper`
 - `scheduleTrigger`
 
-`workflowStart` official output is `userChatInput`. Add `userFiles` only when the workflow enables chat file upload and downstream file parsing needs it.
+`workflowStart` official output is `userChatInput`. Add `userFiles` only when the workflow enables chat file upload. When `userFiles` is added, enable the matching `chatConfig.fileSelectConfig` file channels for the required file categories (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with non-empty `customFileExtensionList`; see `references/file-format-rules.md`).
 
 ## Visual Edges Versus Data References
 
@@ -173,6 +173,8 @@ Start from the official `readFiles` default.
 `fileUrlList.value` should reference `["workflowStart-xxx", "userFiles"]`.
 
 Downstream text nodes should consume `system_text`, not raw `userFiles`.
+
+Parse text-bearing documents only. Images are understood by a vision-capable `chatNode`/`tools` node via `fileUrlList` (enable `canSelectImg`), not by `readFiles` (see `references/file-format-rules.md`).
 
 ### `httpRequest468`
 

@@ -1,0 +1,234 @@
+{
+  "nodes": [
+    {
+      "nodeId": "userGuide",
+      "name": "对话开场配置",
+      "intro": "",
+      "avatar": "core/workflow/template/systemConfig",
+      "flowNodeType": "userGuide",
+      "position": { "x": 0, "y": 0 },
+      "version": "481",
+      "inputs": [
+        { "key": "welcomeText", "renderTypeList": ["hidden"], "valueType": "string", "label": "欢迎语", "value": "" },
+        { "key": "variables", "renderTypeList": ["hidden"], "valueType": "any", "label": "全局变量", "value": [] },
+        {
+          "key": "questionGuide",
+          "renderTypeList": ["hidden"],
+          "valueType": "any",
+          "label": "问题引导",
+          "value": { "open": false }
+        },
+        { "key": "tts", "renderTypeList": ["hidden"], "valueType": "any", "label": "", "value": { "type": "web" } },
+        {
+          "key": "whisper",
+          "renderTypeList": ["hidden"],
+          "valueType": "any",
+          "label": "",
+          "value": { "open": false, "autoSend": false, "autoTTSResponse": false }
+        },
+        { "key": "scheduleTrigger", "renderTypeList": ["hidden"], "valueType": "any", "label": "", "value": null }
+      ],
+      "outputs": []
+    },
+    {
+      "nodeId": "workflowStart",
+      "name": "工作流入口",
+      "intro": "",
+      "avatar": "core/workflow/template/workflowStart",
+      "flowNodeType": "workflowStart",
+      "position": { "x": 1500, "y": 0 },
+      "version": "481",
+      "inputs": [
+        {
+          "key": "userChatInput",
+          "renderTypeList": ["reference", "textarea"],
+          "valueType": "string",
+          "label": "用户问题",
+          "required": true,
+          "toolDescription": "用户问题"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "userChatInput",
+          "key": "userChatInput",
+          "label": "用户问题",
+          "type": "static",
+          "valueType": "string",
+          "description": ""
+        },
+        {
+          "id": "userFiles",
+          "key": "userFiles",
+          "label": "用户上传的文件",
+          "type": "static",
+          "valueType": "arrayString",
+          "description": "用户在本轮对话中上传的文件（含图片）"
+        }
+      ]
+    },
+    {
+      "nodeId": "visionChat",
+      "name": "图片理解",
+      "intro": "使用多模态视觉模型理解用户上传的图片",
+      "avatar": "core/workflow/template/aiChat",
+      "flowNodeType": "chatNode",
+      "showStatus": true,
+      "position": { "x": 3000, "y": 0 },
+      "version": "4.9.7",
+      "inputs": [
+        {
+          "key": "model",
+          "renderTypeList": ["settingLLMModel", "reference"],
+          "label": "AI 模型",
+          "valueType": "string",
+          "value": "qwen-vl-plus"
+        },
+        { "key": "temperature", "renderTypeList": ["hidden"], "label": "", "valueType": "number" },
+        { "key": "maxToken", "renderTypeList": ["hidden"], "label": "", "valueType": "number" },
+        {
+          "key": "isResponseAnswerText",
+          "renderTypeList": ["hidden"],
+          "label": "",
+          "value": false,
+          "valueType": "boolean"
+        },
+        { "key": "aiChatVision", "renderTypeList": ["hidden"], "label": "", "value": true, "valueType": "boolean" },
+        {
+          "key": "aiChatReasoning",
+          "renderTypeList": ["hidden"],
+          "label": "",
+          "value": false,
+          "valueType": "boolean"
+        },
+        {
+          "key": "systemPrompt",
+          "renderTypeList": ["textarea", "reference"],
+          "valueType": "string",
+          "label": "提示词",
+          "maxLength": 100000,
+          "isRichText": true,
+          "value": "你是图片理解助手。请仔细查看用户上传的图片，并依据用户的问题进行描述、识别或提取信息。当图片不清晰或内容不足时，请明确告知用户。",
+          "description": "模型固定的引导词"
+        },
+        {
+          "key": "history",
+          "renderTypeList": ["numberInput", "reference"],
+          "valueType": "chatHistory",
+          "label": "聊天记录",
+          "required": true,
+          "min": 0,
+          "max": 50,
+          "value": 6
+        },
+        {
+          "key": "quoteQA",
+          "renderTypeList": ["settingDatasetQuotePrompt"],
+          "label": "",
+          "debugLabel": "知识库引用",
+          "valueType": "datasetQuote"
+        },
+        {
+          "key": "fileUrlList",
+          "renderTypeList": ["reference", "input"],
+          "label": "文件链接",
+          "debugLabel": "文件链接",
+          "description": "用户上传的文档和图片链接",
+          "valueType": "arrayString",
+          "value": [["workflowStart", "userFiles"]]
+        },
+        {
+          "key": "userChatInput",
+          "renderTypeList": ["reference", "textarea"],
+          "valueType": "string",
+          "label": "用户问题",
+          "toolDescription": "用户问题",
+          "required": true,
+          "value": ["workflowStart", "userChatInput"]
+        }
+      ],
+      "outputs": [
+        {
+          "id": "history",
+          "key": "history",
+          "required": true,
+          "label": "新的上下文",
+          "description": "将本次回复内容拼接上历史记录",
+          "valueType": "chatHistory",
+          "type": "static"
+        },
+        {
+          "id": "answerText",
+          "key": "answerText",
+          "required": true,
+          "label": "AI 回复内容",
+          "description": "AI 模型对本次对话的回复",
+          "valueType": "string",
+          "type": "static"
+        },
+        {
+          "id": "reasoningText",
+          "key": "reasoningText",
+          "required": false,
+          "label": "思考过程",
+          "valueType": "string",
+          "type": "static"
+        },
+        {
+          "id": "system_error_text",
+          "key": "system_error_text",
+          "type": "error",
+          "valueType": "string",
+          "label": "错误信息"
+        }
+      ],
+      "catchError": false
+    },
+    {
+      "nodeId": "answer",
+      "name": "指定回复",
+      "intro": "输出最终结果",
+      "avatar": "core/workflow/template/reply",
+      "flowNodeType": "answerNode",
+      "position": { "x": 4500, "y": 0 },
+      "inputs": [
+        {
+          "key": "text",
+          "renderTypeList": ["textarea", "reference"],
+          "valueType": "any",
+          "required": true,
+          "isRichText": false,
+          "maxLength": 100000,
+          "label": "回复的内容",
+          "value": "{{$visionChat.answerText$}}"
+        }
+      ],
+      "outputs": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "workflowStart",
+      "target": "visionChat",
+      "sourceHandle": "workflowStart-source-right",
+      "targetHandle": "visionChat-target-left"
+    },
+    {
+      "source": "visionChat",
+      "target": "answer",
+      "sourceHandle": "visionChat-source-right",
+      "targetHandle": "answer-target-left"
+    }
+  ],
+  "chatConfig": {
+    "welcomeText": "# 图片识别助手\n\n上传一张图片（截图、照片或扫描件），并告诉我你想了解的内容：\n\n- 例如：**这张图片里有什么？**\n- 例如：**帮我提取图片中的文字。**\n\n> 提示：请尽量上传清晰的图片，以获得更准确的识别结果。",
+    "variables": [],
+    "fileSelectConfig": {
+      "canSelectImg": true,
+      "canLocalUpload": true,
+      "canUrlUpload": false,
+      "maxFiles": 1
+    },
+    "scheduledTriggerConfig": { "cronString": "", "timezone": "Asia/Shanghai", "defaultPrompt": "" }
+  }
+}
