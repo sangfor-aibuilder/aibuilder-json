@@ -8,8 +8,8 @@ Use these mechanisms:
 
 - App-level required values: system config global variables.
 - Structured required inputs: `formInput` node fields.
-- Required file uploads: `workflowStart.userFiles` plus `chatConfig.fileSelectConfig.canSelectFile = true`.
-- Parsed file content: `readFiles.fileUrlList` references `workflowStart.userFiles`, then downstream nodes reference `readFiles.system_text`.
+- Required file uploads: `workflowStart.userFiles` plus `chatConfig.fileSelectConfig` with at least one file channel switch matching the required file categories (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with non-empty `customFileExtensionList`; see `references/file-format-rules.md`).
+- Parsed file content: `readFiles.fileUrlList` references `workflowStart.userFiles`, then downstream nodes reference `readFiles.system_text`; images are understood by a vision-capable `chatNode`/`tools` through `fileUrlList`, not by `readFiles`.
 
 Do not rely only on `systemPrompt`, `welcomeText`, node descriptions, or answer text to tell the user to provide required data.
 

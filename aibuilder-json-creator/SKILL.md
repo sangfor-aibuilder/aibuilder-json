@@ -22,6 +22,7 @@ Load these first for every generation or repair task:
 Load conditional references only when the requirement needs them:
 
 - `references/required-input-rules.md`
+- `references/file-format-rules.md` when the requirement involves user file uploads or multiple file formats
 - `references/ifelse-rules.md`
 - `references/dataset-rules.md`
 - `references/classify-rules.md`
@@ -73,7 +74,7 @@ Include exactly one `workflowStart` and one `userGuide`.
 - `runtime-node-templates.md` is not a competing template source. It only explains how to copy official defaults and which scenario values may be filled.
 - Do not invent inputs, outputs, handles, or variable syntax.
 - Generate clean UTF-8 Chinese user-facing text.
-- Required files flow through `workflowStart.userFiles` and `readFiles.system_text`.
+- Required file uploads flow through `workflowStart.userFiles`; enable the matching file channels in `chatConfig.fileSelectConfig` (see `references/file-format-rules.md`). Text-bearing documents are parsed by `readFiles`; downstream consumers use `readFiles.system_text`.
 - Normal input references use `["nodeId", "outputKey"]`.
 - `answerNode.text.value` must be a string. Variable references inside it must use `{{$nodeId.outputKey$}}`; never use array references such as `["nodeId", "outputKey"]` for `answerNode.text`.
 - `textEditor.system_textareaInput` uses `{{$nodeId.outputKey$}}` when embedding upstream variables in text.
@@ -95,6 +96,7 @@ Include exactly one `workflowStart` and one `userGuide`.
 ## Hard Requirements
 
 - Official default `workflowStart` has input `userChatInput` and output `userChatInput`; add `userFiles` only when the workflow needs chat file upload.
+- A workflow that collects user files must enable at least one matching file channel in `chatConfig.fileSelectConfig` (documents: `canSelectFile`; images: `canSelectImg`; audio/video: `canSelectAudio`/`canSelectVideo`; custom extensions: `canSelectCustomFileExtension` with non-empty `customFileExtensionList`); text-bearing documents go through `readFiles`, images go to a vision-capable `chatNode`/`tools`.
 - Every `chatNode` includes `model`, `isResponseAnswerText`, `systemPrompt`, `history`, `quoteQA`, `fileUrlList`, and `userChatInput`.
 - `chatNode.model.renderTypeList` includes `settingLLMModel`.
 - If a `chatNode` eventually outputs through an `answerNode`, set `isResponseAnswerText.value = false`.

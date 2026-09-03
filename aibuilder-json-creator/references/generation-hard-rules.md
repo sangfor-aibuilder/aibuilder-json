@@ -96,7 +96,7 @@ Reject these recurring invalid keys:
 ## 7. Required Input Collection
 
 - Required user-provided text/number/select/switch/object data must be modeled as `formInput` fields or supported global config metadata.
-- Required files must use `workflowStart.userFiles`, `chatConfig.fileSelectConfig.canSelectFile = true`, and `readFiles` when text content is needed.
+- Required file uploads must use `workflowStart.userFiles` plus the matching `chatConfig.fileSelectConfig` file channels: documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with a non-empty `customFileExtensionList` (see `references/file-format-rules.md`). Use `readFiles` when document text content is needed; images go to a vision-capable `chatNode`/`tools` through `fileUrlList`.
 - Do not rely on `systemPrompt`, `welcomeText`, node descriptions, or final answer text as the only collection mechanism.
 
 ## 8. Retrieval And Routing

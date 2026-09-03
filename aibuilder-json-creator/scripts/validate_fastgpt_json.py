@@ -59,6 +59,7 @@ BUSINESS_HANDLE_KEYS = {
 MOJIBAKE_MARKERS = ("\ufffd", "\u9422", "\u93c2", "\u7eef", "\u920b", "\u95bb", "\u95ba")
 MIN_CONNECTED_X_GAP = 1500
 MIN_SIBLING_Y_GAP = 1000
+FILE_CHANNEL_KEYS = ("canSelectFile", "canSelectImg", "canSelectVideo", "canSelectAudio", "canSelectCustomFileExtension")
 NON_RUNTIME_NODE_TYPES = {"userGuide"}
 
 
@@ -131,7 +132,11 @@ def main() -> int:
     path = Path(sys.argv[1])
     errors: list[str] = []
     official_inputs, official_outputs = load_official_contracts()
-    allowed_outputs = {**ALLOWED_OUTPUTS, **official_outputs}
+    allowed_outputs: dict[str, set[str]] = {}
+    for _node_type in set(ALLOWED_OUTPUTS) | set(official_outputs):
+        allowed_outputs[_node_type] = set(ALLOWED_OUTPUTS.get(_node_type, set())) | set(
+            official_outputs.get(_node_type, set())
+        )
     try:
         raw_text = path.read_text(encoding="utf-8-sig")
         data = json.loads(raw_text)
@@ -160,6 +165,10 @@ def main() -> int:
         welcome_text = chat_config.get("welcomeText")
         if not isinstance(welcome_text, str) or not welcome_text.strip():
             errors.append("chatConfig.welcomeText must be non-empty")
+
+    file_select_config = chat_config.get("fileSelectConfig")
+    if not isinstance(file_select_config, dict):
+        file_select_config = {}
 
     node_by_id: dict[str, dict[str, Any]] = {}
     positions: dict[str, tuple[int, int]] = {}
@@ -318,8 +327,12 @@ def main() -> int:
                 if not any(isinstance(output, dict) and output.get("key") == key for output in outputs):
                     errors.append(f"{node_id}(workflowStart) missing required output: {key}")
             has_user_files = any(isinstance(output, dict) and output.get("key") == "userFiles" for output in outputs)
-            if has_user_files and not bool(chat_config.get("fileSelectConfig", {}).get("canSelectFile")):
-                errors.append(f"{node_id}: userFiles output requires chatConfig.fileSelectConfig.canSelectFile = true")
+            if has_user_files and not any(bool(file_select_config.get(key)) for key in FILE_CHANNEL_KEYS):
+                errors.append(
+                    f"{node_id}: userFiles output requires at least one enabled file channel in "
+                    "chatConfig.fileSelectConfig "
+                    "(canSelectFile/canSelectImg/canSelectVideo/canSelectAudio/canSelectCustomFileExtension)"
+                )
 
         if node_type == "contentExtract":
             extract_keys = by_key.get("extractKeys", {}).get("value")
@@ -415,6 +428,18 @@ def main() -> int:
                         f"{node_id}.{input_item.get('key')}: template reference is not upstream in visual graph: "
                         f"{ref_node}->{node_id}"
                     )
+
+    if any(isinstance(node, dict) and node.get("flowNodeType") == "readFiles" for node in nodes):
+        if not bool(file_select_config.get("canSelectFile")):
+            errors.append(
+                "readFiles node requires chatConfig.fileSelectConfig.canSelectFile = true (documents channel)"
+            )
+    if bool(file_select_config.get("canSelectCustomFileExtension")) and not file_select_config.get(
+        "customFileExtensionList"
+    ):
+        errors.append(
+            "chatConfig.fileSelectConfig.canSelectCustomFileExtension requires a non-empty customFileExtensionList"
+        )
 
     if re.search(r"\{\{(?!\$)", raw_text):
         errors.append("legacy moustache reference found")
