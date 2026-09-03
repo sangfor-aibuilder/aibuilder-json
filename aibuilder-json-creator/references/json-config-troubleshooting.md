@@ -172,7 +172,7 @@
 - [ ] 上游引用都能定位到有效节点与输出键
 - [ ] `answerNode` 的 `key` 为 `text`
 - [ ] 指定回复 `value` 采用单一且一致的引用格式
-- [ ] 文件型流程已开启 `chatConfig.fileSelectConfig.canSelectFile`
+- [ ] 文件型流程已开启与所需文件类别匹配的 `chatConfig.fileSelectConfig` 通道（文档 `canSelectFile` / 图片 `canSelectImg` / 音视频 `canSelectAudio`、`canSelectVideo` / 自定义扩展名 `canSelectCustomFileExtension` 且 `customFileExtensionList` 非空）
 - [ ] AI 节点不仅有提示词，还接入了有效业务输入
 - [ ] 开场白包含明确操作提示（如“请直接上传文件”）
 

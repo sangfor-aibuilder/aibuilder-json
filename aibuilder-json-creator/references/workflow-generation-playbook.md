@@ -80,7 +80,7 @@ Required input mapping:
 - Required text/long text: `formInput` field with Chinese label, description, and `required: true`.
 - Required number/select/switch: `formInput` field with default/range/options and Chinese description.
 - Adjustable thresholds and numeric parameters: omit `value` and `step`; include `defaultValue`, `min`, and `max` when supported.
-- Required file: `workflowStart.userFiles` with `chatConfig.fileSelectConfig.canSelectFile = true`, then `readFiles`.
+- Required file: `workflowStart.userFiles` with the matching `chatConfig.fileSelectConfig` file channels (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with non-empty `customFileExtensionList`; see `references/file-format-rules.md`), then `readFiles` for text-bearing documents.
 - App-level stable parameters: system config global variables.
 - If downstream logic needs file content, reference parsed text outputs such as `readFiles.system_text`, not raw uploaded files.
 

@@ -144,7 +144,7 @@ Runtime:
 
 Strict rules:
 
-- If chat file upload is required, enable `chatConfig.fileSelectConfig.canSelectFile = true`.
+- If chat file upload is required, enable the matching file channels in `chatConfig.fileSelectConfig` for the required file categories (documents `canSelectFile`, images `canSelectImg`, audio `canSelectAudio`, video `canSelectVideo`, custom extensions `canSelectCustomFileExtension` with non-empty `customFileExtensionList`; see `references/file-format-rules.md`).
 - File flows should reference `["workflowStartNodeId", "userFiles"]`.
 
 ### 3.2 `userGuide`
